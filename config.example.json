@@ -1,0 +1,22 @@
+{
+  "switch": {
+    "ip": "192.168.1.100",
+    "protocol": "http",
+    "port": 80,
+    "username": "manager",
+    "password": "CHANGE_ME",
+    "rest_version": "v4",
+    "polling_interval_seconds": 5,
+    "demo_mode": false
+  },
+  "switch_info": {
+    "model": "HP 2530-48G-PoEP Switch (J9772A)",
+    "total_rj45_ports": 48,
+    "total_sfp_ports": 4,
+    "max_poe_watts": 382.0
+  },
+  "app": {
+    "host": "0.0.0.0",
+    "port": 8085
+  }
+}

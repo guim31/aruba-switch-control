@@ -1,0 +1,13 @@
+services:
+  aruba-switch-control:
+    build: .
+    container_name: aruba-switch-control
+    mem_limit: 512m
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./config.json:/workspace/config.json
+      - ./switch_metadata.db:/workspace/switch_metadata.db
+    environment:
+      - TZ=Europe/Paris

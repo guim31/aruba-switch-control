@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HP 2530-48G-PoEP - Visual Switch Manager</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.4.6">
+</head>
+<body class="bg-slate-100 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white transition-colors duration-200">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20 text-white font-bold text-lg">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">HP 2530-48G-PoEP Switch</h1>
+                    <span id="model-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">J9772A</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-globe"></i> IP: <strong id="switch-ip-display" class="text-slate-700 dark:text-slate-200 font-mono">192.168.100.100</strong></span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-microchip"></i> Firmware: <strong id="firmware-display" class="text-slate-700 dark:text-slate-200 font-mono">YA.16.09.0007</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Theme Toggle Button (Light/Dark) -->
+            <button id="btn-theme-toggle" title="Changer de thème" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+                <i id="theme-toggle-icon" class="fa-solid fa-moon text-amber-500 dark:text-cyan-400"></i>
+                <span id="theme-toggle-text">Mode Sombre</span>
+            </button>
+
+            <!-- Connection Status Pill -->
+            <div id="status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span id="status-text">REST API Active</span>
+            </div>
+
+            <!-- Demo Mode Badge -->
+            <div id="demo-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-500/40 shadow-sm">
+                <i class="fa-solid fa-masks-theater text-purple-500"></i> Mode Démo
+            </div>
+
+            <!-- Refresh Button -->
+            <button id="btn-refresh" title="Rafraîchir les données" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+
+            <!-- Settings Button -->
+            <button id="btn-settings" title="Paramètres du switch" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+                <i class="fa-solid fa-gear text-slate-500 dark:text-slate-400"></i> Configuration
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Metric 1: Active Ports -->
+            <div class="metric-card">
+                <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <span>Ports Actifs</span>
+                    <i class="fa-solid fa-ethernet text-cyan-500"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <div class="text-2xl font-bold text-slate-900 dark:text-white font-mono" id="stat-active-ports">0 / 52</div>
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400" id="stat-ports-pct">0% connecté</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+                    <div id="bar-active-ports" class="bg-cyan-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Metric 2: PoE Power Usage -->
+            <div class="metric-card">
+                <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <span>Consommation PoE+</span>
+                    <i class="fa-solid fa-bolt text-amber-500"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <div class="text-2xl font-bold text-slate-900 dark:text-white font-mono" id="stat-poe-watts">0.0 W</div>
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">sur <span id="stat-poe-max">382 W</span></span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+                    <div id="bar-poe-watts" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Metric 3: Connection Status & Uptime -->
+            <div class="metric-card">
+                <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <span>État de connexion</span>
+                    <i class="fa-solid fa-tower-broadcast text-emerald-500"></i>
+                </div>
+                <div class="mt-2 flex items-center gap-2.5">
+                    <span id="stat-uptime-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0"></span>
+                    <div class="text-sm font-bold text-slate-900 dark:text-white leading-snug" id="stat-uptime">--</div>
+                </div>
+                <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">ProVision / ArubaOS-S YA</div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Control Toolbar -->
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+            <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+                <!-- Search Input -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="input-search" placeholder="Rechercher port (ex: 12), nom, VLAN ou note..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg pl-9 pr-3 py-2 outline-none transition">
+                </div>
+
+                <!-- Filter: Status -->
+                <select id="filter-status" class="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 text-xs text-slate-700 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-cyan-500">
+                    <option value="all">Tous les états</option>
+                    <option value="up">Link UP (Connecté)</option>
+                    <option value="down">Link DOWN (Déconnecté)</option>
+                    <option value="poe">PoE Actif</option>
+                    <option value="disabled">Désactivé</option>
+                </select>
+
+                <!-- Filter: Cable Color -->
+                <select id="filter-color" class="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 text-xs text-slate-700 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-cyan-500">
+                    <option value="all">Toutes les couleurs de câble</option>
+                </select>
+            </div>
+
+            <!-- View Options & Reset Filters / Reset All Ports -->
+            <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <span id="filtered-count" class="font-mono text-slate-700 dark:text-zinc-300 font-semibold">52 / 52 ports affichés</span>
+                <button id="btn-reset-filters" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition underline cursor-pointer">Réinitialiser filtres</button>
+                <button id="btn-reset-all-ports" class="px-2.5 py-1 rounded bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/80 text-xs font-semibold transition cursor-pointer flex items-center gap-1">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Libérer TOUS les ports
+                </button>
+            </div>
+        </div>
+
+        <!-- Visual Rack Section (Patch Panel 24 Ports + Visual Cables + Switch HP 2530-48G-PoEP) -->
+        <section id="rack-section" class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4 relative">
+
+            <!-- SVG Overlay for Realistic Patch Cords -->
+            <svg id="cables-svg-layer" class="absolute inset-0 w-full h-full pointer-events-none z-20 hidden">
+                <defs>
+                    <filter id="cable-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feDropShadow dx="1.5" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.6" />
+                    </filter>
+                </defs>
+            </svg>
+
+            <!-- Rack Header Info & Toggles -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-zinc-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-sm shadow-cyan-500/50"></div>
+                    <h2 class="text-xs font-bold text-slate-700 dark:text-zinc-200 uppercase tracking-wider">Vue Rack Réseau (Baie 24P + Switch HP 2530-48G)</h2>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs">
+                    <!-- Dynamic Visual Cable Tracing Toggle Button -->
+                    <button id="btn-toggle-cables" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer">
+                        <i class="fa-solid fa-plug text-cyan-200"></i>
+                        <span id="cables-toggle-text">Afficher les Câbles</span>
+                    </button>
+
+                    <!-- Toggle Patch Panel -->
+                    <button id="btn-toggle-patchpanel" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
+                        <i class="fa-solid fa-server text-slate-500"></i>
+                        <span id="patchpanel-toggle-text">Masquer Baie</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1. PANNEAU DE BRASSAGE 24 PORTS (1U RACK UNIT ABOVE SWITCH) -->
+            <div id="patch-panel-container" class="patch-panel-chassis p-3 rounded-xl border border-slate-700/80 bg-zinc-950 text-slate-100 shadow-xl relative overflow-x-auto scrollbar-thin z-10">
+                <div class="flex items-center justify-between gap-3 w-full">
+                    <!-- Left Patch Panel Branding -->
+                    <div class="flex flex-col justify-between h-14 pr-3 border-r border-slate-800 shrink-0 w-24">
+                        <div>
+                            <div class="text-xs font-extrabold tracking-wider text-slate-300 uppercase">PATCH PANEL</div>
+                            <div class="text-[8px] font-mono text-cyan-400">Cat6 UTP / 24P</div>
+                        </div>
+                        <div class="text-[7.5px] font-mono text-slate-500">1U RACK UNIT</div>
+                    </div>
+
+                    <!-- Center: 24 Keystone Ports (3 Modules of 8 Ports) -->
+                    <div class="flex items-center justify-center gap-2.5 flex-1" id="patch-panel-ports-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+
+                    <!-- Right Margin Space -->
+                    <div class="w-20 shrink-0"></div>
+                </div>
+            </div>
+
+            <!-- Visual Interconnect Banner -->
+            <div class="flex items-center justify-between px-3 py-1 bg-slate-100 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-800/80 rounded-lg text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-cyan-500"></i> Activez "Afficher les Câbles" pour dessiner les jarretières raccordées. Cliquez directement sur un câble pour en changer la couleur !</span>
+                <span>SPACING 1U RACK</span>
+            </div>
+
+            <!-- 2. HP 2530-48G-PoEP SWITCH CHASSIS (1U RACK UNIT BELOW PATCH PANEL) -->
+            <div class="switch-chassis p-3 sm:p-4 rounded-xl border border-slate-700/80 bg-zinc-950 text-slate-100 shadow-2xl relative overflow-x-auto scrollbar-thin z-10">
+                <div class="flex items-center justify-between gap-3 w-full">
+
+                    <!-- Left Panel: HP Logo, Branding, Status LEDs & Console Port -->
+                    <div class="flex flex-col justify-between h-28 pr-3 border-r border-slate-800 shrink-0 w-24">
+                        <div>
+                            <div class="text-xl font-black tracking-widest text-white leading-none">hp</div>
+                            <div class="text-[8px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">2530-48G-PoEP</div>
+                            <div class="text-[7.5px] font-mono text-cyan-400 font-semibold">J9772A</div>
+                        </div>
+
+                        <!-- System LEDs -->
+                        <div class="grid grid-cols-2 gap-x-1 gap-y-0.5 text-[8px] text-slate-400 font-mono">
+                            <div class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500"></span>
+                                <span class="text-slate-300">PWR</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                                <span>FLT</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span class="text-slate-300">LOC</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                <span class="text-cyan-300">PoE</span>
+                            </div>
+                        </div>
+
+                        <!-- Console & Reset Controls -->
+                        <div class="flex items-center justify-between text-[7.5px] text-slate-500 font-mono pt-0.5 border-t border-slate-800/80">
+                            <span title="Console RJ45">CONSOLE</span>
+                            <div class="flex gap-0.5">
+                                <span class="w-1 h-1 rounded-full bg-slate-700" title="Reset"></span>
+                                <span class="w-1 h-1 rounded-full bg-slate-700" title="Clear"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center: 48 RJ45 Ports Grouped into 4 Physical Modules of 12 Ports -->
+                    <div class="flex items-center justify-center gap-2.5 flex-1 min-w-0" id="ports-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="w-px h-24 bg-slate-800 shrink-0"></div>
+
+                    <!-- Right: 4 SFP Dual-Personality / Uplink Slots (Ports 49..52) -->
+                    <div class="shrink-0 space-y-1 w-20 text-center">
+                        <div class="text-[8px] text-slate-400 font-mono font-bold tracking-wider uppercase">SFP</div>
+                        <div class="p-1.5 bg-zinc-900/90 border border-slate-700/80 rounded-lg grid grid-cols-2 gap-1 justify-items-center" id="sfp-grid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Hovered / Selected Port Detail Summary Panel -->
+        <section id="port-detail-panel" class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm transition-all duration-300">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="flex items-start gap-4">
+                    <div id="panel-port-badge" class="w-14 h-14 rounded-xl bg-slate-100 dark:bg-zinc-800 border-2 border-slate-300 dark:border-zinc-700 flex flex-col items-center justify-center font-mono font-bold text-slate-800 dark:text-white text-lg shadow-sm">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-normal uppercase">PORT</span>
+                        <span id="panel-port-num">--</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-3">
+                            <h3 id="panel-port-name" class="text-base font-bold text-slate-900 dark:text-white">Sélectionnez un port</h3>
+                            <span id="panel-link-status" class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400">DOWN</span>
+                            <span id="panel-vlan-tag" class="px-2 py-0.5 rounded text-xs font-mono bg-cyan-50 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800">VLAN 1</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-palette text-slate-400"></i> Câble: <strong id="panel-cable-color-name" class="text-slate-800 dark:text-zinc-200">--</strong> <span id="panel-color-indicator" class="inline-block w-3 h-3 rounded-full border border-slate-400"></span></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-network-wired text-slate-400"></i> Type: <strong id="panel-cable-type" class="text-slate-800 dark:text-zinc-200">Cat6</strong></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-server text-slate-400"></i> Panneau Brassage: <strong id="panel-patch-port" class="text-slate-800 dark:text-zinc-200">--</strong></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-500"></i> PoE: <strong id="panel-poe-watts" class="text-slate-800 dark:text-zinc-200">0.0 W</strong></span>
+                        </div>
+
+                        <div id="panel-notes" class="text-xs text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-200 dark:border-zinc-800 mt-1">
+                            Aucune note.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btn-edit-selected-port" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition shadow-md shadow-cyan-600/20 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-pen"></i> Modifier ce port
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-zinc-800 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-zinc-900/50">
+        HP 2530-48G-PoEP (J9772A) Visual Switch Manager &bull; REST API ArubaOS-S
+    </footer>
+
+    <!-- QUICK CABLE COLOR PICKER MODAL -->
+    <div id="modal-cable-color" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden p-4">
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 relative">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-palette text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Couleur du Câble</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Port Switch <span id="quick-color-port-num" class="font-bold font-mono">--</span> <span id="quick-color-patch-info" class="text-cyan-500"></span></p>
+                    </div>
+                </div>
+                <button id="btn-close-quick-color" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300">Choisissez une nouvelle couleur :</label>
+                
+                <!-- Swatches -->
+                <div class="grid grid-cols-5 gap-3 justify-items-center" id="quick-swatches-grid">
+                    <button type="button" data-color="#ef4444" class="quick-swatch-btn w-9 h-9 rounded-full bg-red-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Rouge"></button>
+                    <button type="button" data-color="#f97316" class="quick-swatch-btn w-9 h-9 rounded-full bg-orange-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Orange"></button>
+                    <button type="button" data-color="#eab308" class="quick-swatch-btn w-9 h-9 rounded-full bg-yellow-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Jaune"></button>
+                    <button type="button" data-color="#22c55e" class="quick-swatch-btn w-9 h-9 rounded-full bg-green-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Vert"></button>
+                    <button type="button" data-color="#3b82f6" class="quick-swatch-btn w-9 h-9 rounded-full bg-blue-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Bleu"></button>
+                    <button type="button" data-color="#a855f7" class="quick-swatch-btn w-9 h-9 rounded-full bg-purple-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Violet"></button>
+                    <button type="button" data-color="#ec4899" class="quick-swatch-btn w-9 h-9 rounded-full bg-pink-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Rose"></button>
+                    <button type="button" data-color="#64748b" class="quick-swatch-btn w-9 h-9 rounded-full bg-slate-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Gris"></button>
+                    <button type="button" data-color="#ffffff" class="quick-swatch-btn w-9 h-9 rounded-full bg-white border border-slate-300 shadow-md transition transform hover:scale-115 cursor-pointer" title="Blanc"></button>
+                    <button type="button" data-color="#000000" class="quick-swatch-btn w-9 h-9 rounded-full bg-black border border-slate-600 shadow-md transition transform hover:scale-115 cursor-pointer" title="Noir"></button>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
+                    <span class="text-xs text-slate-500">Couleur sur mesure :</span>
+                    <input type="color" id="quick-color-custom-picker" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT PORT MODAL -->
+    <div id="modal-edit-port" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden p-4">
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30 flex items-center justify-center text-cyan-600 dark:text-cyan-400 font-mono font-bold text-lg">
+                        <span id="modal-port-num">--</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Éditer le Port <span id="modal-port-title">--</span></h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Libellé, couleur du câble et options matérielles</p>
+                    </div>
+                </div>
+                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="form-edit-port" class="space-y-4">
+                <input type="hidden" id="edit-port-id">
+
+                <!-- Custom Name / Label -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Nom / Libellé de l'équipement</label>
+                    <input type="text" id="edit-custom-name" placeholder="ex: Serveur ESXi 01, Borne Wi-Fi..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-sm text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                </div>
+
+                <!-- Cable Color Picker -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Couleur du câble raccordé</label>
+                    <div class="flex items-center gap-3">
+                        <!-- Swatches -->
+                        <div class="flex items-center gap-2 flex-wrap flex-1" id="color-swatches">
+                            <button type="button" data-color="#ef4444" class="swatch-btn bg-red-500" title="Rouge"></button>
+                            <button type="button" data-color="#f97316" class="swatch-btn bg-orange-500" title="Orange"></button>
+                            <button type="button" data-color="#eab308" class="swatch-btn bg-yellow-500" title="Jaune"></button>
+                            <button type="button" data-color="#22c55e" class="swatch-btn bg-green-500" title="Vert"></button>
+                            <button type="button" data-color="#3b82f6" class="swatch-btn bg-blue-500" title="Bleu"></button>
+                            <button type="button" data-color="#a855f7" class="swatch-btn bg-purple-500" title="Violet"></button>
+                            <button type="button" data-color="#ec4899" class="swatch-btn bg-pink-500" title="Rose"></button>
+                            <button type="button" data-color="#64748b" class="swatch-btn bg-slate-500" title="Gris"></button>
+                            <button type="button" data-color="#ffffff" class="swatch-btn bg-white border border-slate-300" title="Blanc"></button>
+                            <button type="button" data-color="#000000" class="swatch-btn bg-black border border-slate-600" title="Noir"></button>
+                        </div>
+                        <!-- Hex Input & Color Picker -->
+                        <input type="color" id="edit-color-picker" class="w-9 h-9 rounded cursor-pointer bg-transparent border-0">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Cable Type -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Type de câble</label>
+                        <select id="edit-cable-type" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
+                            <option value="Cat6a">Cat6a</option>
+                            <option value="Cat6">Cat6</option>
+                            <option value="Cat5e">Cat5e</option>
+                            <option value="Fiber MM">Fibre Multimode (MM)</option>
+                            <option value="Fiber SM">Fibre Singlemode (SM)</option>
+                            <option value="DAC">Direct Attach Copper (DAC)</option>
+                        </select>
+                    </div>
+
+                    <!-- Patch Panel Port -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Prise Panneau Brassage (1-24)</label>
+                        <input type="text" id="edit-patch-port" placeholder="ex: PP1-04 ou 4" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                    </div>
+                </div>
+
+                <!-- Device Category -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Catégorie d'équipement</label>
+                    <select id="edit-device-cat" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
+                        <option value="server">Serveur / Hyperviseur</option>
+                        <option value="router">Routeur / Firewall</option>
+                        <option value="ap">Point d'accès Wi-Fi</option>
+                        <option value="camera">Caméra IP PoE</option>
+                        <option value="pc">Poste de travail / PC</option>
+                        <option value="printer">Imprimante</option>
+                        <option value="switch">Switch / Uplink</option>
+                        <option value="other">Autre / Inconnu</option>
+                    </select>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Notes / Remarques</label>
+                    <textarea id="edit-notes" rows="2" placeholder="Informations complémentaires, IP fixe, VLAN requis..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Actions on Switch (Direct REST Control) -->
+                <div class="p-3 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-2">
+                    <div class="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
+                        <span>Actions Matérielles (REST API)</span>
+                        <span class="text-[10px] text-slate-500">192.168.100.100</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" id="btn-toggle-port" class="px-2.5 py-1.5 rounded text-[11px] font-medium bg-white dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
+                            <i class="fa-solid fa-power-off text-emerald-500"></i> Désactiver Port
+                        </button>
+
+                        <button type="button" id="btn-toggle-poe" class="px-2.5 py-1.5 rounded text-[11px] font-semibold bg-cyan-50 dark:bg-cyan-950/80 hover:bg-cyan-100 dark:hover:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700 transition cursor-pointer flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-bolt text-amber-500"></i> <span id="poe-btn-label">Toggl. PoE</span>
+                        </button>
+
+                        <button type="button" id="btn-bounce-poe" class="px-2.5 py-1.5 rounded text-[11px] font-medium bg-white dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
+                            <i class="fa-solid fa-arrows-rotate text-amber-500"></i> Rebooter PoE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Buttons with "Libérer ce port" -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-zinc-800">
+                    <button type="button" id="btn-free-port" class="px-3 py-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/80 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Libérer ce port
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btn-cancel-edit" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer">Annuler</button>
+                        <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer">Enregistrer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POE SAFETY DANGER WARNING MODAL -->
+    <div id="modal-poe-warning" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md hidden p-4">
+        <div class="bg-white dark:bg-zinc-900 border-2 border-rose-500/80 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center gap-3 border-b border-rose-200 dark:border-rose-900/60 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">⚠️ Security Alert - Hardware Danger</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Confirmation PoE sur Port <span id="poe-warn-port-num" class="font-bold font-mono">--</span></p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/80 rounded-xl space-y-2 text-xs text-slate-700 dark:text-slate-200">
+                <p class="font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 text-sm">
+                    <i class="fa-solid fa-bolt text-amber-500"></i> Activation de la Tension 48V PoE+
+                </p>
+                <p class="leading-relaxed">
+                    Injecter du courant PoE sur un appareil <strong>non compatible</strong> (ex: PC portable, carte réseau standard, imprimante) présente un <strong>risque de détérioration définitive de vos équipements</strong>.
+                </p>
+            </div>
+
+            <label class="flex items-start gap-3 p-3 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer">
+                <input type="checkbox" id="chk-confirm-poe" class="mt-0.5 w-4 h-4 text-rose-600 rounded focus:ring-rose-500 cursor-pointer">
+                <span class="text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
+                    Je certifie que l'équipement raccordé sur le Port <span id="poe-warn-port-num2" class="font-mono font-bold">--</span> supporte la norme PoE (IEEE 802.3af/at).
+                </span>
+            </label>
+
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                <button type="button" id="btn-cancel-poe-warning" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold cursor-pointer">Annuler</button>
+                <button type="button" id="btn-execute-poe-enable" disabled class="px-5 py-2 rounded-lg bg-slate-300 dark:bg-zinc-800 text-slate-400 dark:text-slate-600 text-xs font-bold transition cursor-not-allowed flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> Confirmer & Activer PoE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIGURATION SETTINGS MODAL -->
+    <div id="modal-settings" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden p-4">
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 relative">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-500"></i> Configuration Switch</h3>
+                <button id="btn-close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="form-settings" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Adresse IP du Switch</label>
+                    <input type="text" id="cfg-ip" value="192.168.100.100" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 font-mono text-sm text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Protocole</label>
+                        <select id="cfg-protocol" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
+                            <option value="http">HTTP</option>
+                            <option value="https">HTTPS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Port HTTP</label>
+                        <input type="number" id="cfg-port" value="80" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 font-mono text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Nom d'utilisateur Switch (CLI & REST API)</label>
+                    <input type="text" id="cfg-username" value="administrator" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Mot de passe Manager</label>
+                    <input type="password" id="cfg-password" placeholder="Mot de passe du compte manager" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                    <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1">💡 Indiquez le mot de passe du compte <strong>manager</strong> pour débloquer les actions physiques réelles sur le switch (PoE, Reboot, Enable/Disable).</p>
+                </div>
+
+                <div class="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-xl space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label for="cfg-demo-mode" class="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-masks-theater text-purple-500"></i> Mode Démo / Simulation (Sécurisé)
+                        </label>
+                        <input type="checkbox" id="cfg-demo-mode" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer">
+                    </div>
+                    <p class="text-[11px] text-purple-700 dark:text-purple-300">
+                        Simule un switch d'essai virtuel. Idéal pour réaliser vos démonstrations en toute sécurité sans jamais impacter votre switch réel.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-zinc-800">
+                    <button type="button" id="btn-cancel-settings" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer">Annuler</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition cursor-pointer">Sauvegarder & Tester</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FLOATING BULK ACTIONS BAR (CTRL Multi-Select) -->
+    <div id="bulk-actions-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/90 dark:bg-zinc-900/95 border border-cyan-500/50 backdrop-blur-md rounded-2xl px-5 py-3 shadow-2xl shadow-cyan-950/40 hidden transition-all duration-300 transform scale-100 flex flex-col md:flex-row items-center gap-4 max-w-4xl w-[92vw]">
+        <div class="flex items-center gap-3 shrink-0 border-b md:border-b-0 md:border-r border-slate-700/80 pb-2 md:pb-0 md:pr-4">
+            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-sm">
+                <i class="fa-solid fa-object-group"></i>
+            </div>
+            <div>
+                <div class="text-xs font-bold text-white flex items-center gap-2">
+                    <span id="bulk-selection-count" class="bg-cyan-500 text-slate-950 px-2 py-0.5 rounded-full text-[11px] font-extrabold">0</span>
+                    <span>Ports Sélectionnés</span>
+                </div>
+                <div class="text-[10px] text-slate-400">Touche <kbd class="px-1 py-0.5 bg-slate-800 rounded border border-slate-600 text-slate-300 font-mono">Ctrl</kbd> maintenue</div>
+            </div>
+        </div>
+
+        <!-- Progress indicator (hidden by default) -->
+        <div id="bulk-progress-container" class="hidden flex-1 flex items-center gap-3 w-full">
+            <div class="flex-1 space-y-1">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-300">
+                    <span id="bulk-progress-text">Traitement en cours...</span>
+                    <span id="bulk-progress-pct" class="font-mono text-cyan-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+                    <div id="bulk-progress-bar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div id="bulk-buttons-container" class="flex items-center gap-1.5 flex-wrap justify-center md:justify-end flex-1">
+            <button id="btn-bulk-poe-enable" class="px-2.5 py-1.5 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-cyan-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Activer l'alimentation PoE sur tous les ports sélectionnés">
+                <i class="fa-solid fa-bolt text-amber-400"></i> Activer PoE
+            </button>
+            <button id="btn-bulk-poe-disable" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Couper l'alimentation PoE sur les ports sélectionnés">
+                <i class="fa-solid fa-bolt-slash text-slate-400"></i> Désactiver PoE
+            </button>
+            <button id="btn-bulk-poe-bounce" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Rebooter le PoE (cycle d'extinction/rallumage)">
+                <i class="fa-solid fa-arrows-rotate text-amber-400"></i> Reboot PoE
+            </button>
+            <button id="btn-bulk-port-enable" class="px-2.5 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Activer l'interface réseau des ports sélectionnés">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i> Activer Port
+            </button>
+            <button id="btn-bulk-port-disable" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/40 text-rose-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Désactiver (Shutdown) l'interface des ports sélectionnés">
+                <i class="fa-solid fa-circle-minus text-rose-400"></i> Désactiver Port
+            </button>
+            <button id="btn-bulk-free-port" class="px-2.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Effacer les informations de câblage et libérer les ports">
+                <i class="fa-solid fa-broom text-purple-400"></i> Libérer
+            </button>
+            <button id="btn-bulk-clear-selection" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[11px] font-medium transition cursor-pointer ml-1" title="Annuler la sélection">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js?v=1.4.6"></script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+/* HP 2530-48G-PoEP Switch Visual Manager - Custom CSS */
+
+:root {
+    --bg-primary: #f8fafc;
+    --bg-card: #ffffff;
+    --border-card: #e2e8f0;
+    --text-main: #0f172a;
+    --text-sub: #64748b;
+    --chassis-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+.dark {
+    --bg-primary: #09090b;
+    --bg-card: #121215;
+    --border-card: #27272a;
+    --text-main: #f4f4f5;
+    --text-sub: #a1a1aa;
+    --chassis-bg: linear-gradient(180deg, #18181b 0%, #09090b 100%);
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body.wiring-mode {
+    cursor: crosshair !important;
+}
+
+/* Metric Cards */
+.metric-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 0.85rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .metric-card {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
+.metric-card:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Photorealistic Hardware Rack Chassis */
+.switch-chassis, .patch-panel-chassis {
+    background: var(--chassis-bg);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Compact RJ45 Switch Port Unit */
+.port-unit {
+    position: relative;
+    width: 26px;
+    height: 34px;
+    box-sizing: border-box;
+    background: #111827;
+    border: 1.5px solid #374151;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    user-select: none;
+}
+
+.port-unit:hover, .port-unit.linked-hover {
+    transform: scale(1.18);
+    z-index: 30;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.8) !important;
+}
+
+.port-unit.active-selected {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 16px rgba(6, 182, 212, 0.9) !important;
+    transform: scale(1.2);
+    z-index: 40;
+}
+
+.port-unit.drop-target-active, .patch-port-unit.drop-target-active {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.95) !important;
+    transform: scale(1.25) !important;
+    z-index: 50 !important;
+}
+
+.port-unit.wiring-source, .patch-port-unit.wiring-source {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.95) !important;
+    animation: pulse-border 1.2s infinite;
+    z-index: 50 !important;
+}
+
+@keyframes pulse-border {
+    0%, 100% { transform: scale(1.1); }
+    50% { transform: scale(1.22); }
+}
+
+/* 24-Port Patch Panel Keystone Port Unit */
+.patch-port-unit {
+    position: relative;
+    width: 26px;
+    height: 34px;
+    box-sizing: border-box;
+    background: #1e293b;
+    border: 1.5px solid #475569;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    user-select: none;
+}
+
+.patch-port-unit:hover, .patch-port-unit.linked-hover {
+    transform: scale(1.18);
+    z-index: 30;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.8) !important;
+}
+
+/* Patch Panel White Label Strip */
+.patch-label-strip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #f1f5f9;
+    width: 100%;
+    text-align: center;
+    line-height: 1.1;
+    border-radius: 1px;
+    margin-bottom: 1px;
+}
+
+/* Cable Color Marker Ring / Boot */
+.cable-boot-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    pointer-events: none;
+    transition: border-color 0.2s ease;
+}
+
+/* SVG Patch Cable Styles (Native Vector Shadows & Glow) */
+.patch-cable-path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 6.0px;
+    pointer-events: stroke;
+    cursor: pointer;
+    transition: stroke-width 0.15s ease, opacity 0.15s ease;
+}
+
+.patch-cable-shadow, .patch-cable-glow {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: opacity 0.15s ease, stroke-width 0.15s ease;
+}
+
+/* Inside RJ45 Port Socket */
+.port-socket {
+    width: 18px;
+    height: 14px;
+    background: #030712;
+    border: 1px solid #4b5563;
+    border-radius: 2px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Gold Contacts Pins */
+.port-socket::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    width: 12px;
+    height: 3px;
+    background: repeating-linear-gradient(
+        90deg,
+        #f59e0b 0px,
+        #f59e0b 1.5px,
+        transparent 1.5px,
+        transparent 3px
+    );
+}
+
+/* Port Number Badge */
+.port-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #f3f4f6;
+    line-height: 1;
+    margin-top: 1px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Status LEDs */
+.port-leds {
+    display: flex;
+    align-items: center;
+    gap: 1.5px;
+    position: absolute;
+    top: 1.5px;
+    right: 1.5px;
+}
+
+.led-indicator {
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background-color: #4b5563;
+}
+
+.led-indicator.led-1000m {
+    background-color: #10b981;
+    box-shadow: 0 0 4px #10b981;
+}
+
+.led-indicator.led-100m {
+    background-color: #f59e0b;
+    box-shadow: 0 0 4px #f59e0b;
+}
+
+.led-indicator.led-poe {
+    background-color: #06b6d4;
+    box-shadow: 0 0 4px #06b6d4;
+}
+
+/* PoE Power Delivery – Crisp Animated Border Pulse on Ports */
+@keyframes poe-border-pulse {
+    0%, 100% {
+        border-color: #06b6d4;
+        box-shadow: 0 0 5px rgba(6, 182, 212, 0.6);
+    }
+    50% {
+        border-color: #22d3ee;
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+    }
+}
+
+.poe-delivering-halo {
+    animation: poe-border-pulse 1.8s infinite ease-in-out !important;
+    border-width: 2px !important;
+    border-color: #06b6d4 !important;
+    z-index: 20;
+}
+
+/* PoE Power Delivery – Static Precision Luminous Dots Overlay on Cables */
+.poe-energy-dot-path {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 2.8px;
+    stroke-linecap: round;
+    stroke-dasharray: 0 13;
+    opacity: 0.92;
+    pointer-events: none;
+}
+
+/* SFP Port Unit */
+.sfp-unit {
+    width: 32px;
+    height: 34px;
+    box-sizing: border-box;
+    background: #0f172a;
+    border: 1.5px solid #334155;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sfp-unit:hover {
+    transform: scale(1.12);
+    border-color: #c084fc;
+    box-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+}
+
+.sfp-unit.active-selected {
+    border-color: #c084fc !important;
+    box-shadow: 0 0 16px rgba(192, 132, 252, 0.9) !important;
+    transform: scale(1.18);
+}
+
+/* Cable Swatches */
+.swatch-btn, .quick-swatch-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.swatch-btn:hover, .quick-swatch-btn:hover {
+    transform: scale(1.2);
+}
+
+.swatch-btn.selected, .quick-swatch-btn.selected {
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #06b6d4;
+    transform: scale(1.15);
+}
+
+/* Scrollbar Customization */
+.scrollbar-thin::-webkit-scrollbar {
+    height: 5px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #090d16;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
