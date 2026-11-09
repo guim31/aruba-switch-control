@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HP 2530-48G-PoEP - Visual Switch Manager</title>
+    <title data-i18n="app.title">HP 2530-48G-PoEP - Visual Switch Manager</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,7 +28,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css?v=1.4.6">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.5.0">
 </head>
 <body class="bg-slate-100 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white transition-colors duration-200">
 
@@ -51,10 +51,16 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- Language Switch (EN / FR) -->
+            <div id="lang-switch" role="group" data-i18n-aria-label="lang.label" class="flex items-center rounded-lg bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 p-0.5 text-xs font-semibold">
+                <button type="button" data-lang-option="en" lang="en" title="English" class="lang-btn px-2 py-1 rounded-md cursor-pointer transition">EN</button>
+                <button type="button" data-lang-option="fr" lang="fr" title="Français" class="lang-btn px-2 py-1 rounded-md cursor-pointer transition">FR</button>
+            </div>
+
             <!-- Theme Toggle Button (Light/Dark) -->
-            <button id="btn-theme-toggle" title="Changer de thème" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+            <button id="btn-theme-toggle" data-i18n-title="header.themeTitle" title="Changer de thème" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
                 <i id="theme-toggle-icon" class="fa-solid fa-moon text-amber-500 dark:text-cyan-400"></i>
-                <span id="theme-toggle-text">Mode Sombre</span>
+                <span id="theme-toggle-text" data-i18n="theme.dark">Mode Sombre</span>
             </button>
 
             <!-- Connection Status Pill -->
@@ -63,22 +69,22 @@
                   <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span id="status-text">REST API Active</span>
+                <span id="status-text" data-i18n="status.restActive">REST API Active</span>
             </div>
 
             <!-- Demo Mode Badge -->
             <div id="demo-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-500/40 shadow-sm">
-                <i class="fa-solid fa-masks-theater text-purple-500"></i> Mode Démo
+                <i class="fa-solid fa-masks-theater text-purple-500"></i> <span data-i18n="header.demoBadge">Mode Démo</span>
             </div>
 
             <!-- Refresh Button -->
-            <button id="btn-refresh" title="Rafraîchir les données" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+            <button id="btn-refresh" data-i18n-title="header.refreshTitle" data-i18n-aria-label="header.refreshTitle" title="Rafraîchir les données" class="p-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
 
             <!-- Settings Button -->
-            <button id="btn-settings" title="Paramètres du switch" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
-                <i class="fa-solid fa-gear text-slate-500 dark:text-slate-400"></i> Configuration
+            <button id="btn-settings" data-i18n-title="header.settingsTitle" title="Paramètres du switch" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition border border-slate-200 dark:border-zinc-700 cursor-pointer">
+                <i class="fa-solid fa-gear text-slate-500 dark:text-slate-400"></i> <span data-i18n="header.settings">Configuration</span>
             </button>
         </div>
     </header>
@@ -91,12 +97,12 @@
             <!-- Metric 1: Active Ports -->
             <div class="metric-card">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    <span>Ports Actifs</span>
+                    <span data-i18n="kpi.activePorts">Ports Actifs</span>
                     <i class="fa-solid fa-ethernet text-cyan-500"></i>
                 </div>
                 <div class="mt-2 flex items-baseline justify-between">
                     <div class="text-2xl font-bold text-slate-900 dark:text-white font-mono" id="stat-active-ports">0 / 52</div>
-                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400" id="stat-ports-pct">0% connecté</span>
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400" id="stat-ports-pct" data-i18n="kpi.portsPct" data-i18n-vars='{"pct":"0%"}'>0% connecté</span>
                 </div>
                 <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
                     <div id="bar-active-ports" class="bg-cyan-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -106,12 +112,12 @@
             <!-- Metric 2: PoE Power Usage -->
             <div class="metric-card">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    <span>Consommation PoE+</span>
+                    <span data-i18n="kpi.poe">Consommation PoE+</span>
                     <i class="fa-solid fa-bolt text-amber-500"></i>
                 </div>
                 <div class="mt-2 flex items-baseline justify-between">
                     <div class="text-2xl font-bold text-slate-900 dark:text-white font-mono" id="stat-poe-watts">0.0 W</div>
-                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">sur <span id="stat-poe-max">382 W</span></span>
+                    <span id="stat-poe-max" class="text-xs font-medium text-slate-500 dark:text-slate-400" data-i18n="kpi.poeOf" data-i18n-vars='{"max":"382 W"}'>sur 382 W</span>
                 </div>
                 <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
                     <div id="bar-poe-watts" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -121,7 +127,7 @@
             <!-- Metric 3: Connection Status & Uptime -->
             <div class="metric-card">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    <span>État de connexion</span>
+                    <span data-i18n="kpi.connection">État de connexion</span>
                     <i class="fa-solid fa-tower-broadcast text-emerald-500"></i>
                 </div>
                 <div class="mt-2 flex items-center gap-2.5">
@@ -138,30 +144,30 @@
                 <!-- Search Input -->
                 <div class="relative flex-1 min-w-[200px]">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="input-search" placeholder="Rechercher port (ex: 12), nom, VLAN ou note..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg pl-9 pr-3 py-2 outline-none transition">
+                    <input type="text" id="input-search" data-i18n-placeholder="toolbar.searchPlaceholder" placeholder="Rechercher port (ex: 12), nom, VLAN ou note..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg pl-9 pr-3 py-2 outline-none transition">
                 </div>
 
                 <!-- Filter: Status -->
                 <select id="filter-status" class="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 text-xs text-slate-700 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-cyan-500">
-                    <option value="all">Tous les états</option>
-                    <option value="up">Link UP (Connecté)</option>
-                    <option value="down">Link DOWN (Déconnecté)</option>
-                    <option value="poe">PoE Actif</option>
-                    <option value="disabled">Désactivé</option>
+                    <option value="all" data-i18n="filter.allStatus">Tous les états</option>
+                    <option value="up" data-i18n="filter.up">Link UP (Connecté)</option>
+                    <option value="down" data-i18n="filter.down">Link DOWN (Déconnecté)</option>
+                    <option value="poe" data-i18n="filter.poe">PoE Actif</option>
+                    <option value="disabled" data-i18n="filter.disabled">Désactivé</option>
                 </select>
 
                 <!-- Filter: Cable Color -->
                 <select id="filter-color" class="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 text-xs text-slate-700 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-cyan-500">
-                    <option value="all">Toutes les couleurs de câble</option>
+                    <option value="all" data-i18n="filter.allColors">Toutes les couleurs de câble</option>
                 </select>
             </div>
 
             <!-- View Options & Reset Filters / Reset All Ports -->
             <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                <span id="filtered-count" class="font-mono text-slate-700 dark:text-zinc-300 font-semibold">52 / 52 ports affichés</span>
-                <button id="btn-reset-filters" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition underline cursor-pointer">Réinitialiser filtres</button>
+                <span id="filtered-count" class="font-mono text-slate-700 dark:text-zinc-300 font-semibold" data-i18n="toolbar.filteredCount" data-i18n-vars='{"count":52,"total":52}'>52 / 52 ports affichés</span>
+                <button id="btn-reset-filters" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition underline cursor-pointer" data-i18n="toolbar.resetFilters">Réinitialiser filtres</button>
                 <button id="btn-reset-all-ports" class="px-2.5 py-1 rounded bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/80 text-xs font-semibold transition cursor-pointer flex items-center gap-1">
-                    <i class="fa-solid fa-trash-arrow-up"></i> Libérer TOUS les ports
+                    <i class="fa-solid fa-trash-arrow-up"></i> <span data-i18n="toolbar.freeAll">Libérer TOUS les ports</span>
                 </button>
             </div>
         </div>
@@ -182,20 +188,20 @@
             <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-zinc-800">
                 <div class="flex items-center gap-2.5">
                     <div class="w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-sm shadow-cyan-500/50"></div>
-                    <h2 class="text-xs font-bold text-slate-700 dark:text-zinc-200 uppercase tracking-wider">Vue Rack Réseau (Baie 24P + Switch HP 2530-48G)</h2>
+                    <h2 class="text-xs font-bold text-slate-700 dark:text-zinc-200 uppercase tracking-wider" data-i18n="rack.title">Vue Rack Réseau (Baie 24P + Switch HP 2530-48G)</h2>
                 </div>
 
                 <div class="flex items-center gap-2 text-xs">
                     <!-- Dynamic Visual Cable Tracing Toggle Button -->
                     <button id="btn-toggle-cables" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer">
                         <i class="fa-solid fa-plug text-cyan-200"></i>
-                        <span id="cables-toggle-text">Afficher les Câbles</span>
+                        <span id="cables-toggle-text" data-i18n="rack.showCables">Afficher les Câbles</span>
                     </button>
 
                     <!-- Toggle Patch Panel -->
                     <button id="btn-toggle-patchpanel" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
                         <i class="fa-solid fa-server text-slate-500"></i>
-                        <span id="patchpanel-toggle-text">Masquer Baie</span>
+                        <span id="patchpanel-toggle-text" data-i18n="rack.hidePanel">Masquer Baie</span>
                     </button>
                 </div>
             </div>
@@ -224,7 +230,7 @@
 
             <!-- Visual Interconnect Banner -->
             <div class="flex items-center justify-between px-3 py-1 bg-slate-100 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-800/80 rounded-lg text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-cyan-500"></i> Activez "Afficher les Câbles" pour dessiner les jarretières raccordées. Cliquez directement sur un câble pour en changer la couleur !</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-route text-cyan-500"></i> <span data-i18n="rack.hint">Activez "Afficher les Câbles" pour dessiner les jarretières raccordées. Cliquez directement sur un câble pour en changer la couleur !</span></span>
                 <span>SPACING 1U RACK</span>
             </div>
 
@@ -302,19 +308,19 @@
 
                     <div class="space-y-1">
                         <div class="flex items-center gap-3">
-                            <h3 id="panel-port-name" class="text-base font-bold text-slate-900 dark:text-white">Sélectionnez un port</h3>
+                            <h3 id="panel-port-name" class="text-base font-bold text-slate-900 dark:text-white" data-i18n="panel.selectPort">Sélectionnez un port</h3>
                             <span id="panel-link-status" class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400">DOWN</span>
                             <span id="panel-vlan-tag" class="px-2 py-0.5 rounded text-xs font-mono bg-cyan-50 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800">VLAN 1</span>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400">
-                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-palette text-slate-400"></i> Câble: <strong id="panel-cable-color-name" class="text-slate-800 dark:text-zinc-200">--</strong> <span id="panel-color-indicator" class="inline-block w-3 h-3 rounded-full border border-slate-400"></span></span>
-                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-network-wired text-slate-400"></i> Type: <strong id="panel-cable-type" class="text-slate-800 dark:text-zinc-200">Cat6</strong></span>
-                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-server text-slate-400"></i> Panneau Brassage: <strong id="panel-patch-port" class="text-slate-800 dark:text-zinc-200">--</strong></span>
-                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-500"></i> PoE: <strong id="panel-poe-watts" class="text-slate-800 dark:text-zinc-200">0.0 W</strong></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-palette text-slate-400"></i> <span data-i18n="panel.cable">Câble:</span> <strong id="panel-cable-color-name" class="text-slate-800 dark:text-zinc-200">--</strong> <span id="panel-color-indicator" class="inline-block w-3 h-3 rounded-full border border-slate-400"></span></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-network-wired text-slate-400"></i> <span data-i18n="panel.type">Type:</span> <strong id="panel-cable-type" class="text-slate-800 dark:text-zinc-200">Cat6</strong></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-server text-slate-400"></i> <span data-i18n="panel.patch">Panneau Brassage:</span> <strong id="panel-patch-port" class="text-slate-800 dark:text-zinc-200">--</strong></span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-500"></i> <span data-i18n="panel.poe">PoE:</span> <strong id="panel-poe-watts" class="text-slate-800 dark:text-zinc-200">0.0 W</strong></span>
                         </div>
 
-                        <div id="panel-notes" class="text-xs text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-200 dark:border-zinc-800 mt-1">
+                        <div id="panel-notes" class="text-xs text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-200 dark:border-zinc-800 mt-1" data-i18n="panel.noNotes">
                             Aucune note.
                         </div>
                     </div>
@@ -322,7 +328,7 @@
 
                 <div class="flex items-center gap-2">
                     <button id="btn-edit-selected-port" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition shadow-md shadow-cyan-600/20 flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-pen"></i> Modifier ce port
+                        <i class="fa-solid fa-pen"></i> <span data-i18n="panel.edit">Modifier ce port</span>
                     </button>
                 </div>
             </div>
@@ -344,33 +350,33 @@
                         <i class="fa-solid fa-palette text-sm"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Couleur du Câble</h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Port Switch <span id="quick-color-port-num" class="font-bold font-mono">--</span> <span id="quick-color-patch-info" class="text-cyan-500"></span></p>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white" data-i18n="quickColor.title">Couleur du Câble</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400"><span data-i18n="quickColor.switchPort">Port Switch</span> <span id="quick-color-port-num" class="font-bold font-mono">--</span> <span id="quick-color-patch-info" class="text-cyan-500"></span></p>
                     </div>
                 </div>
-                <button id="btn-close-quick-color" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <button id="btn-close-quick-color" data-i18n-aria-label="common.close" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="space-y-3">
-                <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300">Choisissez une nouvelle couleur :</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300" data-i18n="quickColor.choose">Choisissez une nouvelle couleur :</label>
                 
                 <!-- Swatches -->
                 <div class="grid grid-cols-5 gap-3 justify-items-center" id="quick-swatches-grid">
-                    <button type="button" data-color="#ef4444" class="quick-swatch-btn w-9 h-9 rounded-full bg-red-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Rouge"></button>
-                    <button type="button" data-color="#f97316" class="quick-swatch-btn w-9 h-9 rounded-full bg-orange-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Orange"></button>
-                    <button type="button" data-color="#eab308" class="quick-swatch-btn w-9 h-9 rounded-full bg-yellow-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Jaune"></button>
-                    <button type="button" data-color="#22c55e" class="quick-swatch-btn w-9 h-9 rounded-full bg-green-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Vert"></button>
-                    <button type="button" data-color="#3b82f6" class="quick-swatch-btn w-9 h-9 rounded-full bg-blue-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Bleu"></button>
-                    <button type="button" data-color="#a855f7" class="quick-swatch-btn w-9 h-9 rounded-full bg-purple-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Violet"></button>
-                    <button type="button" data-color="#ec4899" class="quick-swatch-btn w-9 h-9 rounded-full bg-pink-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Rose"></button>
-                    <button type="button" data-color="#64748b" class="quick-swatch-btn w-9 h-9 rounded-full bg-slate-500 shadow-md transition transform hover:scale-115 cursor-pointer" title="Gris"></button>
-                    <button type="button" data-color="#ffffff" class="quick-swatch-btn w-9 h-9 rounded-full bg-white border border-slate-300 shadow-md transition transform hover:scale-115 cursor-pointer" title="Blanc"></button>
-                    <button type="button" data-color="#000000" class="quick-swatch-btn w-9 h-9 rounded-full bg-black border border-slate-600 shadow-md transition transform hover:scale-115 cursor-pointer" title="Noir"></button>
+                    <button type="button" data-color="#ef4444" class="quick-swatch-btn w-9 h-9 rounded-full bg-red-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.red" data-i18n-aria-label="color.red" title="Rouge"></button>
+                    <button type="button" data-color="#f97316" class="quick-swatch-btn w-9 h-9 rounded-full bg-orange-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.orange" data-i18n-aria-label="color.orange" title="Orange"></button>
+                    <button type="button" data-color="#eab308" class="quick-swatch-btn w-9 h-9 rounded-full bg-yellow-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.yellow" data-i18n-aria-label="color.yellow" title="Jaune"></button>
+                    <button type="button" data-color="#22c55e" class="quick-swatch-btn w-9 h-9 rounded-full bg-green-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.green" data-i18n-aria-label="color.green" title="Vert"></button>
+                    <button type="button" data-color="#3b82f6" class="quick-swatch-btn w-9 h-9 rounded-full bg-blue-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.blue" data-i18n-aria-label="color.blue" title="Bleu"></button>
+                    <button type="button" data-color="#a855f7" class="quick-swatch-btn w-9 h-9 rounded-full bg-purple-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.purple" data-i18n-aria-label="color.purple" title="Violet"></button>
+                    <button type="button" data-color="#ec4899" class="quick-swatch-btn w-9 h-9 rounded-full bg-pink-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.pink" data-i18n-aria-label="color.pink" title="Rose"></button>
+                    <button type="button" data-color="#64748b" class="quick-swatch-btn w-9 h-9 rounded-full bg-slate-500 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.gray" data-i18n-aria-label="color.gray" title="Gris"></button>
+                    <button type="button" data-color="#ffffff" class="quick-swatch-btn w-9 h-9 rounded-full bg-white border border-slate-300 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.white" data-i18n-aria-label="color.white" title="Blanc"></button>
+                    <button type="button" data-color="#000000" class="quick-swatch-btn w-9 h-9 rounded-full bg-black border border-slate-600 shadow-md transition transform hover:scale-115 cursor-pointer" data-i18n-title="color.black" data-i18n-aria-label="color.black" title="Noir"></button>
                 </div>
 
                 <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
-                    <span class="text-xs text-slate-500">Couleur sur mesure :</span>
-                    <input type="color" id="quick-color-custom-picker" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0">
+                    <span class="text-xs text-slate-500" data-i18n="quickColor.custom">Couleur sur mesure :</span>
+                    <input type="color" id="quick-color-custom-picker" data-i18n-aria-label="edit.customColor" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0">
                 </div>
             </div>
         </div>
@@ -385,11 +391,11 @@
                         <span id="modal-port-num">--</span>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Éditer le Port <span id="modal-port-title">--</span></h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Libellé, couleur du câble et options matérielles</p>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white"><span data-i18n="edit.title">Éditer le Port</span> <span id="modal-port-title">--</span></h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="edit.subtitle">Libellé, couleur du câble et options matérielles</p>
                     </div>
                 </div>
-                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <button id="btn-close-modal" data-i18n-aria-label="common.close" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <form id="form-edit-port" class="space-y-4">
@@ -397,91 +403,91 @@
 
                 <!-- Custom Name / Label -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Nom / Libellé de l'équipement</label>
-                    <input type="text" id="edit-custom-name" placeholder="ex: Serveur ESXi 01, Borne Wi-Fi..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-sm text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.name">Nom / Libellé de l'équipement</label>
+                    <input type="text" id="edit-custom-name" data-i18n-placeholder="edit.namePh" placeholder="ex: Serveur ESXi 01, Borne Wi-Fi..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-sm text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
                 </div>
 
                 <!-- Cable Color Picker -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Couleur du câble raccordé</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.color">Couleur du câble raccordé</label>
                     <div class="flex items-center gap-3">
                         <!-- Swatches -->
                         <div class="flex items-center gap-2 flex-wrap flex-1" id="color-swatches">
-                            <button type="button" data-color="#ef4444" class="swatch-btn bg-red-500" title="Rouge"></button>
-                            <button type="button" data-color="#f97316" class="swatch-btn bg-orange-500" title="Orange"></button>
-                            <button type="button" data-color="#eab308" class="swatch-btn bg-yellow-500" title="Jaune"></button>
-                            <button type="button" data-color="#22c55e" class="swatch-btn bg-green-500" title="Vert"></button>
-                            <button type="button" data-color="#3b82f6" class="swatch-btn bg-blue-500" title="Bleu"></button>
-                            <button type="button" data-color="#a855f7" class="swatch-btn bg-purple-500" title="Violet"></button>
-                            <button type="button" data-color="#ec4899" class="swatch-btn bg-pink-500" title="Rose"></button>
-                            <button type="button" data-color="#64748b" class="swatch-btn bg-slate-500" title="Gris"></button>
-                            <button type="button" data-color="#ffffff" class="swatch-btn bg-white border border-slate-300" title="Blanc"></button>
-                            <button type="button" data-color="#000000" class="swatch-btn bg-black border border-slate-600" title="Noir"></button>
+                            <button type="button" data-color="#ef4444" class="swatch-btn bg-red-500" data-i18n-title="color.red" data-i18n-aria-label="color.red" title="Rouge"></button>
+                            <button type="button" data-color="#f97316" class="swatch-btn bg-orange-500" data-i18n-title="color.orange" data-i18n-aria-label="color.orange" title="Orange"></button>
+                            <button type="button" data-color="#eab308" class="swatch-btn bg-yellow-500" data-i18n-title="color.yellow" data-i18n-aria-label="color.yellow" title="Jaune"></button>
+                            <button type="button" data-color="#22c55e" class="swatch-btn bg-green-500" data-i18n-title="color.green" data-i18n-aria-label="color.green" title="Vert"></button>
+                            <button type="button" data-color="#3b82f6" class="swatch-btn bg-blue-500" data-i18n-title="color.blue" data-i18n-aria-label="color.blue" title="Bleu"></button>
+                            <button type="button" data-color="#a855f7" class="swatch-btn bg-purple-500" data-i18n-title="color.purple" data-i18n-aria-label="color.purple" title="Violet"></button>
+                            <button type="button" data-color="#ec4899" class="swatch-btn bg-pink-500" data-i18n-title="color.pink" data-i18n-aria-label="color.pink" title="Rose"></button>
+                            <button type="button" data-color="#64748b" class="swatch-btn bg-slate-500" data-i18n-title="color.gray" data-i18n-aria-label="color.gray" title="Gris"></button>
+                            <button type="button" data-color="#ffffff" class="swatch-btn bg-white border border-slate-300" data-i18n-title="color.white" data-i18n-aria-label="color.white" title="Blanc"></button>
+                            <button type="button" data-color="#000000" class="swatch-btn bg-black border border-slate-600" data-i18n-title="color.black" data-i18n-aria-label="color.black" title="Noir"></button>
                         </div>
                         <!-- Hex Input & Color Picker -->
-                        <input type="color" id="edit-color-picker" class="w-9 h-9 rounded cursor-pointer bg-transparent border-0">
+                        <input type="color" id="edit-color-picker" data-i18n-aria-label="edit.customColor" class="w-9 h-9 rounded cursor-pointer bg-transparent border-0">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Cable Type -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Type de câble</label>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.cableType">Type de câble</label>
                         <select id="edit-cable-type" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
                             <option value="Cat6a">Cat6a</option>
                             <option value="Cat6">Cat6</option>
                             <option value="Cat5e">Cat5e</option>
-                            <option value="Fiber MM">Fibre Multimode (MM)</option>
-                            <option value="Fiber SM">Fibre Singlemode (SM)</option>
-                            <option value="DAC">Direct Attach Copper (DAC)</option>
+                            <option value="Fiber MM" data-i18n="cable.fiberMM">Fibre Multimode (MM)</option>
+                            <option value="Fiber SM" data-i18n="cable.fiberSM">Fibre Singlemode (SM)</option>
+                            <option value="DAC" data-i18n="cable.dac">Direct Attach Copper (DAC)</option>
                         </select>
                     </div>
 
                     <!-- Patch Panel Port -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Prise Panneau Brassage (1-24)</label>
-                        <input type="text" id="edit-patch-port" placeholder="ex: PP1-04 ou 4" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.patch">Prise Panneau Brassage (1-24)</label>
+                        <input type="text" id="edit-patch-port" data-i18n-placeholder="edit.patchPh" placeholder="ex: PP1-04 ou 4" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
                     </div>
                 </div>
 
                 <!-- Device Category -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Catégorie d'équipement</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.category">Catégorie d'équipement</label>
                     <select id="edit-device-cat" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
-                        <option value="server">Serveur / Hyperviseur</option>
-                        <option value="router">Routeur / Firewall</option>
-                        <option value="ap">Point d'accès Wi-Fi</option>
-                        <option value="camera">Caméra IP PoE</option>
-                        <option value="pc">Poste de travail / PC</option>
-                        <option value="printer">Imprimante</option>
-                        <option value="switch">Switch / Uplink</option>
-                        <option value="other">Autre / Inconnu</option>
+                        <option value="server" data-i18n="cat.server">Serveur / Hyperviseur</option>
+                        <option value="router" data-i18n="cat.router">Routeur / Firewall</option>
+                        <option value="ap" data-i18n="cat.ap">Point d'accès Wi-Fi</option>
+                        <option value="camera" data-i18n="cat.camera">Caméra IP PoE</option>
+                        <option value="pc" data-i18n="cat.pc">Poste de travail / PC</option>
+                        <option value="printer" data-i18n="cat.printer">Imprimante</option>
+                        <option value="switch" data-i18n="cat.switch">Switch / Uplink</option>
+                        <option value="other" data-i18n="cat.other">Autre / Inconnu</option>
                     </select>
                 </div>
 
                 <!-- Notes -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Notes / Remarques</label>
-                    <textarea id="edit-notes" rows="2" placeholder="Informations complémentaires, IP fixe, VLAN requis..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none resize-none"></textarea>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="edit.notes">Notes / Remarques</label>
+                    <textarea id="edit-notes" rows="2" data-i18n-placeholder="edit.notesPh" placeholder="Informations complémentaires, IP fixe, VLAN requis..." class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none resize-none"></textarea>
                 </div>
 
                 <!-- Actions on Switch (Direct REST Control) -->
                 <div class="p-3 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-2">
                     <div class="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
-                        <span>Actions Matérielles (REST API)</span>
+                        <span data-i18n="edit.hwActions">Actions Matérielles (REST API)</span>
                         <span class="text-[10px] text-slate-500">192.168.100.100</span>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" id="btn-toggle-port" class="px-2.5 py-1.5 rounded text-[11px] font-medium bg-white dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
-                            <i class="fa-solid fa-power-off text-emerald-500"></i> Désactiver Port
+                            <i class="fa-solid fa-power-off text-emerald-500"></i> <span data-i18n="edit.disablePort">Désactiver Port</span>
                         </button>
 
                         <button type="button" id="btn-toggle-poe" class="px-2.5 py-1.5 rounded text-[11px] font-semibold bg-cyan-50 dark:bg-cyan-950/80 hover:bg-cyan-100 dark:hover:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700 transition cursor-pointer flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-bolt text-amber-500"></i> <span id="poe-btn-label">Toggl. PoE</span>
+                            <i class="fa-solid fa-bolt text-amber-500"></i> <span id="poe-btn-label" data-i18n="edit.togglePoe">Toggl. PoE</span>
                         </button>
 
                         <button type="button" id="btn-bounce-poe" class="px-2.5 py-1.5 rounded text-[11px] font-medium bg-white dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
-                            <i class="fa-solid fa-arrows-rotate text-amber-500"></i> Rebooter PoE
+                            <i class="fa-solid fa-arrows-rotate text-amber-500"></i> <span data-i18n="edit.bouncePoe">Rebooter PoE</span>
                         </button>
                     </div>
                 </div>
@@ -489,12 +495,12 @@
                 <!-- Form Buttons with "Libérer ce port" -->
                 <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-zinc-800">
                     <button type="button" id="btn-free-port" class="px-3 py-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/80 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
-                        <i class="fa-solid fa-trash-can"></i> Libérer ce port
+                        <i class="fa-solid fa-trash-can"></i> <span data-i18n="edit.free">Libérer ce port</span>
                     </button>
 
                     <div class="flex items-center gap-2">
-                        <button type="button" id="btn-cancel-edit" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer">Annuler</button>
-                        <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer">Enregistrer</button>
+                        <button type="button" id="btn-cancel-edit" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer" data-i18n="common.cancel">Annuler</button>
+                        <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer" data-i18n="common.save">Enregistrer</button>
                     </div>
                 </div>
             </form>
@@ -509,31 +515,31 @@
                     <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">⚠️ Security Alert - Hardware Danger</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Confirmation PoE sur Port <span id="poe-warn-port-num" class="font-bold font-mono">--</span></p>
+                    <h3 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider" data-i18n="poeWarn.title">⚠️ Security Alert - Hardware Danger</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400"><span data-i18n="poeWarn.subtitle">Confirmation PoE sur Port</span> <span id="poe-warn-port-num" class="font-bold font-mono">--</span></p>
                 </div>
             </div>
 
             <div class="p-4 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/80 rounded-xl space-y-2 text-xs text-slate-700 dark:text-slate-200">
                 <p class="font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 text-sm">
-                    <i class="fa-solid fa-bolt text-amber-500"></i> Activation de la Tension 48V PoE+
+                    <i class="fa-solid fa-bolt text-amber-500"></i> <span data-i18n="poeWarn.heading">Activation de la Tension 48V PoE+</span>
                 </p>
-                <p class="leading-relaxed">
+                <p class="leading-relaxed" data-i18n-html="poeWarn.body">
                     Injecter du courant PoE sur un appareil <strong>non compatible</strong> (ex: PC portable, carte réseau standard, imprimante) présente un <strong>risque de détérioration définitive de vos équipements</strong>.
                 </p>
             </div>
 
             <label class="flex items-start gap-3 p-3 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer">
                 <input type="checkbox" id="chk-confirm-poe" class="mt-0.5 w-4 h-4 text-rose-600 rounded focus:ring-rose-500 cursor-pointer">
-                <span class="text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
-                    Je certifie que l'équipement raccordé sur le Port <span id="poe-warn-port-num2" class="font-mono font-bold">--</span> supporte la norme PoE (IEEE 802.3af/at).
+                <span id="poe-warn-certify" class="text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug" data-i18n-html="poeWarn.certify" data-i18n-vars='{"port":"<span class=\"font-mono font-bold\">--</span>"}'>
+                    Je certifie que l'équipement raccordé sur le Port <span class="font-mono font-bold">--</span> supporte la norme PoE (IEEE 802.3af/at).
                 </span>
             </label>
 
             <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
-                <button type="button" id="btn-cancel-poe-warning" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold cursor-pointer">Annuler</button>
+                <button type="button" id="btn-cancel-poe-warning" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold cursor-pointer" data-i18n="common.cancel">Annuler</button>
                 <button type="button" id="btn-execute-poe-enable" disabled class="px-5 py-2 rounded-lg bg-slate-300 dark:bg-zinc-800 text-slate-400 dark:text-slate-600 text-xs font-bold transition cursor-not-allowed flex items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> Confirmer & Activer PoE
+                    <i class="fa-solid fa-bolt"></i> <span data-i18n="poeWarn.confirm">Confirmer & Activer PoE</span>
                 </button>
             </div>
         </div>
@@ -543,56 +549,56 @@
     <div id="modal-settings" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden p-4">
         <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 relative">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-500"></i> Configuration Switch</h3>
-                <button id="btn-close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-500"></i> <span data-i18n="settings.title">Configuration Switch</span></h3>
+                <button id="btn-close-settings" data-i18n-aria-label="common.close" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <form id="form-settings" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Adresse IP du Switch</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settings.ip">Adresse IP du Switch</label>
                     <input type="text" id="cfg-ip" value="192.168.100.100" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 font-mono text-sm text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Protocole</label>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settings.protocol">Protocole</label>
                         <select id="cfg-protocol" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-200 rounded-lg px-3 py-2 outline-none">
                             <option value="http">HTTP</option>
                             <option value="https">HTTPS</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Port HTTP</label>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settings.port">Port HTTP</label>
                         <input type="number" id="cfg-port" value="80" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 font-mono text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Nom d'utilisateur Switch (CLI & REST API)</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settings.username">Nom d'utilisateur Switch (CLI & REST API)</label>
                     <input type="text" id="cfg-username" value="administrator" required class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Mot de passe Manager</label>
-                    <input type="password" id="cfg-password" placeholder="Mot de passe du compte manager" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
-                    <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1">💡 Indiquez le mot de passe du compte <strong>manager</strong> pour débloquer les actions physiques réelles sur le switch (PoE, Reboot, Enable/Disable).</p>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1" data-i18n="settings.password">Mot de passe Manager</label>
+                    <input type="password" id="cfg-password" data-i18n-placeholder="settings.passwordPh" placeholder="Mot de passe du compte manager" class="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 focus:border-cyan-500 text-xs text-slate-800 dark:text-zinc-100 rounded-lg px-3 py-2 outline-none">
+                    <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1" data-i18n-html="settings.passwordHint">💡 Indiquez le mot de passe du compte <strong>manager</strong> pour débloquer les actions physiques réelles sur le switch (PoE, Reboot, Enable/Disable).</p>
                 </div>
 
                 <div class="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-xl space-y-1.5">
                     <div class="flex items-center justify-between">
                         <label for="cfg-demo-mode" class="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-masks-theater text-purple-500"></i> Mode Démo / Simulation (Sécurisé)
+                            <i class="fa-solid fa-masks-theater text-purple-500"></i> <span data-i18n="settings.demo">Mode Démo / Simulation (Sécurisé)</span>
                         </label>
                         <input type="checkbox" id="cfg-demo-mode" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer">
                     </div>
-                    <p class="text-[11px] text-purple-700 dark:text-purple-300">
+                    <p class="text-[11px] text-purple-700 dark:text-purple-300" data-i18n="settings.demoHint">
                         Simule un switch d'essai virtuel. Idéal pour réaliser vos démonstrations en toute sécurité sans jamais impacter votre switch réel.
                     </p>
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-zinc-800">
-                    <button type="button" id="btn-cancel-settings" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer">Annuler</button>
-                    <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition cursor-pointer">Sauvegarder & Tester</button>
+                    <button type="button" id="btn-cancel-settings" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-medium transition cursor-pointer" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition cursor-pointer" data-i18n="settings.saveTest">Sauvegarder & Tester</button>
                 </div>
             </form>
         </div>
@@ -607,9 +613,9 @@
             <div>
                 <div class="text-xs font-bold text-white flex items-center gap-2">
                     <span id="bulk-selection-count" class="bg-cyan-500 text-slate-950 px-2 py-0.5 rounded-full text-[11px] font-extrabold">0</span>
-                    <span>Ports Sélectionnés</span>
+                    <span id="bulk-selection-label" data-i18n="bulk.selected" data-i18n-vars='{"count":0}'>Ports Sélectionnés</span>
                 </div>
-                <div class="text-[10px] text-slate-400">Touche <kbd class="px-1 py-0.5 bg-slate-800 rounded border border-slate-600 text-slate-300 font-mono">Ctrl</kbd> maintenue</div>
+                <div class="text-[10px] text-slate-400" data-i18n-html="bulk.hold">Touche <kbd class="px-1 py-0.5 bg-slate-800 rounded border border-slate-600 text-slate-300 font-mono">Ctrl</kbd> maintenue</div>
             </div>
         </div>
 
@@ -617,7 +623,7 @@
         <div id="bulk-progress-container" class="hidden flex-1 flex items-center gap-3 w-full">
             <div class="flex-1 space-y-1">
                 <div class="flex justify-between text-[11px] font-semibold text-slate-300">
-                    <span id="bulk-progress-text">Traitement en cours...</span>
+                    <span id="bulk-progress-text" data-i18n="bulk.processing">Traitement en cours...</span>
                     <span id="bulk-progress-pct" class="font-mono text-cyan-400">0%</span>
                 </div>
                 <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
@@ -628,31 +634,32 @@
 
         <!-- Action Buttons -->
         <div id="bulk-buttons-container" class="flex items-center gap-1.5 flex-wrap justify-center md:justify-end flex-1">
-            <button id="btn-bulk-poe-enable" class="px-2.5 py-1.5 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-cyan-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Activer l'alimentation PoE sur tous les ports sélectionnés">
-                <i class="fa-solid fa-bolt text-amber-400"></i> Activer PoE
+            <button id="btn-bulk-poe-enable" class="px-2.5 py-1.5 rounded-lg bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-cyan-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.poeEnableTitle" title="Activer l'alimentation PoE sur tous les ports sélectionnés">
+                <i class="fa-solid fa-bolt text-amber-400"></i> <span data-i18n="bulk.poeEnable">Activer PoE</span>
             </button>
-            <button id="btn-bulk-poe-disable" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Couper l'alimentation PoE sur les ports sélectionnés">
-                <i class="fa-solid fa-bolt-slash text-slate-400"></i> Désactiver PoE
+            <button id="btn-bulk-poe-disable" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.poeDisableTitle" title="Couper l'alimentation PoE sur les ports sélectionnés">
+                <i class="fa-solid fa-bolt-slash text-slate-400"></i> <span data-i18n="bulk.poeDisable">Désactiver PoE</span>
             </button>
-            <button id="btn-bulk-poe-bounce" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Rebooter le PoE (cycle d'extinction/rallumage)">
-                <i class="fa-solid fa-arrows-rotate text-amber-400"></i> Reboot PoE
+            <button id="btn-bulk-poe-bounce" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.poeBounceTitle" title="Rebooter le PoE (cycle d'extinction/rallumage)">
+                <i class="fa-solid fa-arrows-rotate text-amber-400"></i> <span data-i18n="bulk.poeBounce">Reboot PoE</span>
             </button>
-            <button id="btn-bulk-port-enable" class="px-2.5 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Activer l'interface réseau des ports sélectionnés">
-                <i class="fa-solid fa-circle-check text-emerald-400"></i> Activer Port
+            <button id="btn-bulk-port-enable" class="px-2.5 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.portEnableTitle" title="Activer l'interface réseau des ports sélectionnés">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i> <span data-i18n="bulk.portEnable">Activer Port</span>
             </button>
-            <button id="btn-bulk-port-disable" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/40 text-rose-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Désactiver (Shutdown) l'interface des ports sélectionnés">
-                <i class="fa-solid fa-circle-minus text-rose-400"></i> Désactiver Port
+            <button id="btn-bulk-port-disable" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/40 text-rose-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.portDisableTitle" title="Désactiver (Shutdown) l'interface des ports sélectionnés">
+                <i class="fa-solid fa-circle-minus text-rose-400"></i> <span data-i18n="bulk.portDisable">Désactiver Port</span>
             </button>
-            <button id="btn-bulk-free-port" class="px-2.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Effacer les informations de câblage et libérer les ports">
-                <i class="fa-solid fa-broom text-purple-400"></i> Libérer
+            <button id="btn-bulk-free-port" class="px-2.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 text-[11px] font-semibold transition flex items-center gap-1.5 cursor-pointer" data-i18n-title="bulk.freeTitle" title="Effacer les informations de câblage et libérer les ports">
+                <i class="fa-solid fa-broom text-purple-400"></i> <span data-i18n="bulk.free">Libérer</span>
             </button>
-            <button id="btn-bulk-clear-selection" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[11px] font-medium transition cursor-pointer ml-1" title="Annuler la sélection">
+            <button id="btn-bulk-clear-selection" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[11px] font-medium transition cursor-pointer ml-1" data-i18n-title="bulk.clearTitle" data-i18n-aria-label="bulk.clearTitle" title="Annuler la sélection">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="/static/js/app.js?v=1.4.6"></script>
+    <script src="/static/js/i18n.js?v=1.5.0"></script>
+    <script src="/static/js/app.js?v=1.5.0"></script>
 </body>
 </html>

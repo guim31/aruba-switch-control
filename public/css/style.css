@@ -336,3 +336,22 @@ body.wiring-mode {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #475569;
 }
+
+/* Language switch (EN / FR) */
+.lang-btn {
+    color: #64748b;
+}
+
+.dark .lang-btn {
+    color: #a1a1aa;
+}
+
+.lang-btn:hover {
+    color: #0891b2;
+}
+
+.lang-btn.lang-active,
+.dark .lang-btn.lang-active {
+    background-color: #0891b2;
+    color: #ffffff;
+}

@@ -130,11 +130,14 @@ async def get_status():
         "online": live_data.get("online", False),
         "demo_mode": getattr(switch_client, "demo_mode", False),
         "last_error": switch_client.last_error,
+        "last_error_code": switch_client.last_error_code,
+        "last_error_params": switch_client.last_error_params,
         "ip": live_data.get("ip", "192.168.100.100"),
         "model": live_data.get("model", "HP 2530-48G-PoEP (J9772A)"),
         "firmware": live_data.get("firmware", "YA.16.09.0007"),
         "serial": live_data.get("serial", "CN42FP30DT"),
         "uptime": live_data.get("uptime", "Connecté"),
+        "uptime_code": live_data.get("uptime_code", "connected"),
         "active_ports_count": live_data.get("active_ports_count", 0),
         "total_poe_used_watts": round(total_active_poe_watts if total_active_poe_watts > 0 else live_data.get("total_poe_used_watts", 0.0), 1),
         "max_poe_watts": live_data.get("max_poe_watts", 382.0),
@@ -159,7 +162,8 @@ async def reset_all_ports():
     """Clears all metadata for all ports 1..52."""
     is_demo = getattr(switch_client, "demo_mode", False)
     success = reset_all_ports_metadata(is_demo=is_demo)
-    return {"message": "Tous les ports ont été réinitialisés avec succès.", "success": success}
+    # "message_code" lets a client show the message in its own language
+    return {"message": "Tous les ports ont été réinitialisés avec succès.", "message_code": "ports_reset", "success": success}
 
 @app.post("/api/ports/{port_id}/control")
 async def control_port(port_id: int, ctrl: SwitchControlModel):
@@ -216,4 +220,4 @@ async def update_config(new_cfg: SwitchConfigModel):
     
     # Check connection
     data = await switch_client.get_switch_data()
-    return {"message": "Configuration enregistrée", "online": data.get("online", False), "demo_mode": switch_client.demo_mode}
+    return {"message": "Configuration enregistrée", "message_code": "config_saved", "online": data.get("online", False), "demo_mode": switch_client.demo_mode}
