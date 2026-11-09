@@ -28,10 +28,18 @@ class ArubaSwitchClient:
         self.base_url = f"{self.protocol}://{self.ip}:{self.port}/rest/{self.rest_version}"
         self.is_online = False
         self.last_error = ""
+        # Machine-readable error for the UI, which translates it (code + params)
+        self.last_error_code = ""
+        self.last_error_params: Dict[str, Any] = {}
         self.session_cookie = None
 
         if self.demo_mode:
             self._init_demo_state()
+
+    def _set_error(self, message: str, code: str = "", params: Optional[Dict[str, Any]] = None):
+        self.last_error = message
+        self.last_error_code = code
+        self.last_error_params = params or {}
 
     def _init_demo_state(self):
         """Initialize a realistic simulated switch state for demo/dev mode."""
@@ -100,17 +108,18 @@ class ArubaSwitchClient:
         """Fetch real port states, PoE status, and system status concurrently via REST API (or return simulated data in demo mode)."""
         if self.demo_mode:
             self.is_online = True
-            self.last_error = ""
+            self._set_error("")
             active_ports = sum(1 for p in self.demo_ports.values() if p["link_status"] == "UP" and p.get("is_enabled", True))
             total_poe = sum(p["poe_watts"] for p in self.demo_ports.values() if p.get("poe_delivering") and p.get("is_enabled", True))
             return {
                 "online": True,
                 "demo_mode": True,
-                "ip": f"{self.ip} (Démo)",
+                "ip": self.ip,
                 "model": self.switch_info.get("model", "HP 2530-48G-PoEP (Simulateur)"),
                 "firmware": "YA.16.09.0007 [DEMO]",
                 "serial": "DEMO-SWITCH-MODE",
                 "uptime": "Mode Démo / Simulation (Sécurisé)",
+                "uptime_code": "demo",
                 "active_ports_count": active_ports,
                 "total_poe_used_watts": round(total_poe, 1),
                 "max_poe_watts": self.switch_info.get("max_poe_watts", 382.0),
@@ -130,11 +139,11 @@ class ArubaSwitchClient:
                 if isinstance(sys_res, Exception) or sys_res.status_code != 200:
                     self.is_online = False
                     err_msg = str(sys_res) if isinstance(sys_res, Exception) else f"HTTP {sys_res.status_code}"
-                    self.last_error = f"Connexion échouée ({self.ip}): {err_msg}"
+                    self._set_error(f"Connexion échouée ({self.ip}): {err_msg}", "connection_failed", {"ip": self.ip, "detail": err_msg})
                     return self._generate_fallback_data()
 
                 self.is_online = True
-                self.last_error = ""
+                self._set_error("")
                 sys_data = sys_res.json()
 
                 ports_data = {}
@@ -152,7 +161,7 @@ class ArubaSwitchClient:
                 return self._parse_switch_response(sys_data, ports_data, poe_data, stats_data)
         except Exception as e:
             self.is_online = False
-            self.last_error = str(e)
+            self._set_error(str(e), "unexpected", {"detail": str(e)})
             return self._generate_fallback_data()
 
     def _parse_switch_response(self, system_data: Dict, ports_data: Dict, poe_data: Dict, stats_data: Dict) -> Dict[str, Any]:
@@ -208,6 +217,7 @@ class ArubaSwitchClient:
             "firmware": system_data.get("firmware_version", "YA.16.09.0007"),
             "serial": system_data.get("serial_number", "CN42FP30DT"),
             "uptime": "Connecté (REST API Live)",
+            "uptime_code": "connected",
             "active_ports_count": active_ports,
             "total_poe_used_watts": round(total_poe_watts, 1),
             "max_poe_watts": self.switch_info.get("max_poe_watts", 382.0),
@@ -234,10 +244,13 @@ class ArubaSwitchClient:
         return {
             "online": False,
             "last_error": self.last_error or "Connexion au switch...",
+            "last_error_code": self.last_error_code or "connecting",
+            "last_error_params": self.last_error_params,
             "ip": self.ip,
             "model": self.switch_info.get("model", "HP 2530-48G-PoEP (J9772A)"),
             "firmware": "YA.16.09.0007",
             "uptime": "Hors-ligne",
+            "uptime_code": "offline",
             "active_ports_count": 0,
             "total_poe_used_watts": 0.0,
             "max_poe_watts": self.switch_info.get("max_poe_watts", 382.0),

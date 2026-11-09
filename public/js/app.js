@@ -14,6 +14,8 @@ let appState = {
     showCables: true,
     pollingInterval: null,
     theme: 'dark',
+    lastStatus: null,
+    statusFailed: false,
     
     // Interactive Cable Wiring & Drag State
     wiringSource: null,
@@ -30,23 +32,46 @@ let appState = {
     isMultiSelectClick: false
 };
 
-// Cable color palette labels
-const COLOR_NAMES = {
-    "#ef4444": "Rouge",
-    "#f97316": "Orange",
-    "#eab308": "Jaune",
-    "#22c55e": "Vert",
-    "#3b82f6": "Bleu",
-    "#a855f7": "Violet",
-    "#ec4899": "Rose",
-    "#64748b": "Gris",
-    "#ffffff": "Blanc",
-    "#000000": "Noir"
+// Cable color palette (hex -> i18n key)
+const COLOR_KEYS = {
+    "#ef4444": "color.red",
+    "#f97316": "color.orange",
+    "#eab308": "color.yellow",
+    "#22c55e": "color.green",
+    "#3b82f6": "color.blue",
+    "#a855f7": "color.purple",
+    "#ec4899": "color.pink",
+    "#64748b": "color.gray",
+    "#ffffff": "color.white",
+    "#000000": "color.black"
 };
+
+function colorName(hex) {
+    const key = COLOR_KEYS[(hex || "").toLowerCase()];
+    return key ? t(key) : hex;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initApp();
+});
+
+// Re-render everything that is built from data when the language changes
+document.addEventListener("i18n:change", () => {
+    applyTheme(appState.theme);
+    if (appState.lastStatus) {
+        renderStatus(appState.lastStatus);
+    } else if (appState.statusFailed) {
+        renderOfflineStatus();
+    }
+    const quickPort = appState.ports.find(p => p.port_id === appState.quickColorPortId);
+    if (quickPort) updateQuickColorPatchInfo(quickPort);
+    const editId = parseInt(document.getElementById("edit-port-id").value, 10);
+    const editPort = appState.ports.find(p => p.port_id === editId);
+    if (editPort && !document.getElementById("modal-edit-port").classList.contains("hidden")) {
+        updatePoeButton(editPort);
+    }
+    setTimeout(drawPatchCables, 100);
 });
 
 function initTheme() {
@@ -74,11 +99,11 @@ function applyTheme(theme) {
     if (theme === "dark") {
         htmlEl.classList.add("dark");
         if (iconEl) iconEl.className = "fa-solid fa-sun text-amber-400";
-        if (textEl) textEl.textContent = "Mode Clair";
+        i18n.setText(textEl, "theme.light");
     } else {
         htmlEl.classList.remove("dark");
         if (iconEl) iconEl.className = "fa-solid fa-moon text-slate-600";
-        if (textEl) textEl.textContent = "Mode Sombre";
+        i18n.setText(textEl, "theme.dark");
     }
 }
 
@@ -116,11 +141,11 @@ function setupEventListeners() {
         const btn = document.getElementById("btn-toggle-cables");
 
         if (appState.showCables) {
-            txt.textContent = "Masquer Câbles";
+            i18n.setText(txt, "rack.hideCables");
             btn.className = "flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition shadow-md cursor-pointer";
             drawPatchCables();
         } else {
-            txt.textContent = "Afficher les Câbles";
+            i18n.setText(txt, "rack.showCables");
             btn.className = "flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition shadow-md shadow-cyan-600/20 cursor-pointer";
             drawPatchCables();
         }
@@ -134,10 +159,10 @@ function setupEventListeners() {
 
         if (appState.showPatchPanel) {
             panel.classList.remove("hidden");
-            txt.textContent = "Masquer Baie";
+            i18n.setText(txt, "rack.hidePanel");
         } else {
             panel.classList.add("hidden");
-            txt.textContent = "Afficher Baie";
+            i18n.setText(txt, "rack.showPanel");
         }
         setTimeout(drawPatchCables, 100);
     });
@@ -260,7 +285,8 @@ function updateBulkActionBar() {
     if (!bar || !countEl) return;
 
     const count = appState.selectedPorts.size;
-    countEl.textContent = count;
+    countEl.textContent = i18n.formatNumber(count);
+    i18n.setText(document.getElementById("bulk-selection-label"), "bulk.selected", { count });
 
     if (count > 0) {
         bar.classList.remove("hidden");
@@ -279,16 +305,8 @@ async function executeBulkAction(action) {
     const ports = Array.from(appState.selectedPorts).sort((a, b) => a - b);
     if (ports.length === 0) return;
 
-    const actionLabels = {
-        'poe_enable': 'Activation PoE',
-        'poe_disable': 'Désactivation PoE',
-        'poe_bounce': 'Reboot PoE',
-        'enable': 'Activation Port',
-        'disable': 'Désactivation Port',
-        'free': 'Libération Port'
-    };
-
-    const actionTitle = actionLabels[action] || 'Traitement';
+    const knownActions = ['poe_enable', 'poe_disable', 'poe_bounce', 'enable', 'disable', 'free'];
+    const actionKey = knownActions.includes(action) ? `bulk.action.${action}` : 'bulk.action.default';
 
     // UI Progress State
     const buttonsContainer = document.getElementById("bulk-buttons-container");
@@ -307,8 +325,8 @@ async function executeBulkAction(action) {
         const portId = ports[i];
         const pct = Math.round(((i + 1) / ports.length) * 100);
 
-        if (progressText) progressText.textContent = `${actionTitle} sur Port ${portId} (${i + 1}/${ports.length})...`;
-        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressText) i18n.setText(progressText, "bulk.progress", { action: t(actionKey), port: portId, index: i + 1, total: ports.length });
+        if (progressPct) progressPct.textContent = i18n.formatPercent(pct / 100);
         if (progressBar) progressBar.style.width = `${pct}%`;
 
         try {
@@ -345,11 +363,14 @@ async function executeBulkAction(action) {
     if (buttonsContainer) buttonsContainer.classList.remove("hidden");
     if (progressContainer) progressContainer.classList.add("hidden");
     if (progressBar) progressBar.style.width = "0%";
+    if (progressText) i18n.setText(progressText, "bulk.processing");
 
     clearMultiSelection();
     await fetchStatus();
 
-    showToastNotification(`⚡ Action de groupe effectuée sur ${ports.length} port(s) (${successCount} réussi(s)${failCount > 0 ? `, ${failCount} échec(s)` : ''}) !`);
+    const summary = [t("bulk.succeeded", { count: successCount })];
+    if (failCount > 0) summary.push(t("bulk.failed", { count: failCount }));
+    showToastNotification(t("bulk.done", { count: ports.length, summary: summary.join(", ") }));
 }
 
 // Global Drag-and-Drop Rubberband & Click Listeners
@@ -552,10 +573,10 @@ async function completeCableConnection(source, targetElement) {
             if (res.ok) {
                 appState.showCables = true;
                 const txt = document.getElementById("cables-toggle-text");
-                if (txt) txt.textContent = "Masquer Câbles";
+                if (txt) i18n.setText(txt, "rack.hideCables");
 
                 await fetchStatus();
-                showToastNotification(`🔌 Jarretière raccordée : Prise Baie PP-${patchId} ↔️ Port Switch ${switchPortId} !`);
+                showToastNotification(t("toast.cableConnected", { pp: patchId, port: switchPortId }));
             }
         } catch (err) {
             console.error("Wiring connection error:", err);
@@ -570,7 +591,7 @@ function openQuickCableColorModal(portId) {
 
     appState.quickColorPortId = portId;
     document.getElementById("quick-color-port-num").textContent = portId;
-    document.getElementById("quick-color-patch-info").textContent = port.patch_panel_port ? `(Raccordé ${port.patch_panel_port})` : '';
+    updateQuickColorPatchInfo(port);
 
     const currentColor = (port.cable_color || "#3b82f6").toLowerCase();
     document.getElementById("quick-color-custom-picker").value = currentColor;
@@ -585,6 +606,10 @@ function openQuickCableColorModal(portId) {
     });
 
     document.getElementById("modal-cable-color").classList.remove("hidden");
+}
+
+function updateQuickColorPatchInfo(port) {
+    document.getElementById("quick-color-patch-info").textContent = port.patch_panel_port ? t("quickColor.connected", { pp: port.patch_panel_port }) : '';
 }
 
 function closeQuickCableColorModal() {
@@ -618,7 +643,7 @@ async function applyQuickCableColor(hexColor) {
         if (res.ok) {
             closeQuickCableColorModal();
             await fetchStatus();
-            showToastNotification(`🎨 Couleur du câble mise à jour (${COLOR_NAMES[hexColor.toLowerCase()] || hexColor}) !`);
+            showToastNotification(t("toast.colorUpdated", { color: colorName(hexColor) }));
         }
     } catch (err) {
         console.error("Error applying quick cable color:", err);
@@ -634,7 +659,8 @@ function showToastNotification(message) {
         document.body.appendChild(toast);
     }
 
-    toast.innerHTML = `<i class="fa-solid fa-circle-check text-cyan-400 text-sm"></i> ${message}`;
+    toast.innerHTML = `<i class="fa-solid fa-circle-check text-cyan-400 text-sm"></i> <span></span>`;
+    toast.querySelector("span").textContent = message;
     toast.classList.remove("translate-y-10", "opacity-0");
 
     setTimeout(() => {
@@ -650,37 +676,60 @@ async function fetchStatus() {
         
         appState.online = data.online;
         appState.ports = data.ports || [];
-        
-        updateStatusHeader(data);
-        updateKpiMetrics(data);
-        populateColorFilterOptions();
-        renderPortsGrid();
-        renderPatchPanelGrid();
-        
-        if (appState.selectedPortId) {
-            updateDetailPanel(appState.selectedPortId);
-        }
-        
+        appState.lastStatus = data;
+        appState.statusFailed = false;
+
+        renderStatus(data);
         setTimeout(drawPatchCables, 100);
     } catch (err) {
         console.error("Error fetching switch status:", err);
         appState.online = false;
-        const offlineData = {
-            online: false,
-            uptime: "Hors-ligne / Inaccessible",
-            active_ports_count: 0,
-            total_poe_used_watts: 0,
-            max_poe_watts: 382.0
-        };
-        updateStatusPill(false, "Switch Hors-ligne / Inaccessible");
-        updateKpiMetrics(offlineData);
+        appState.lastStatus = null;
+        appState.statusFailed = true;
+        renderOfflineStatus();
+    }
+}
+
+function renderStatus(data) {
+    updateStatusHeader(data);
+    updateKpiMetrics(data);
+    populateColorFilterOptions();
+    renderPortsGrid();
+    renderPatchPanelGrid();
+
+    if (appState.selectedPortId) {
+        updateDetailPanel(appState.selectedPortId);
+    }
+}
+
+function renderOfflineStatus() {
+    const offlineData = {
+        online: false,
+        offline_text: t("status.uptimeOffline"),
+        active_ports_count: 0,
+        total_poe_used_watts: 0,
+        max_poe_watts: 382.0
+    };
+    updateStatusPill(false, t("status.unreachable"));
+    updateKpiMetrics(offlineData);
+}
+
+// Server-side errors come as a code + params; the raw text is only a fallback
+function lastErrorText(data) {
+    const params = data.last_error_params || {};
+    switch (data.last_error_code) {
+        case "connection_failed": return t("error.connectionFailed", { ip: params.ip, detail: params.detail });
+        case "connecting": return t("error.connecting");
+        case "unexpected": return t("error.unexpected", { detail: params.detail });
+        default: return data.last_error || "";
     }
 }
 
 function updateStatusHeader(data) {
-    document.getElementById("switch-ip-display").textContent = data.ip || "192.168.100.100";
+    const ip = data.ip || "192.168.100.100";
+    document.getElementById("switch-ip-display").textContent = data.demo_mode ? t("header.demoIp", { ip }) : ip;
     document.getElementById("firmware-display").textContent = data.firmware || "YA.16.09.0007";
-    document.getElementById("model-badge").textContent = data.demo_mode ? "SIMULATEUR" : "J9772A";
+    document.getElementById("model-badge").textContent = data.demo_mode ? t("header.simulator") : "J9772A";
 
     const demoBadge = document.getElementById("demo-badge");
     if (demoBadge) {
@@ -693,7 +742,7 @@ function updateStatusHeader(data) {
         }
     }
 
-    updateStatusPill(data.online, data.demo_mode ? "Mode Démo (Simulé)" : (data.online ? "REST API Active" : (data.last_error || "Switch Hors-Ligne")));
+    updateStatusPill(data.online, data.demo_mode ? t("status.demo") : (data.online ? t("status.restActive") : (lastErrorText(data) || t("status.offline"))));
 }
 
 function updateStatusPill(online, text) {
@@ -702,6 +751,7 @@ function updateStatusPill(online, text) {
     const ping = document.getElementById("status-ping");
     const statusText = document.getElementById("status-text");
 
+    statusText.removeAttribute("data-i18n");
     statusText.textContent = text;
     if (online) {
         pill.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30";
@@ -719,16 +769,16 @@ function updateKpiMetrics(data) {
     const total = 52;
     const pctPorts = Math.round((active / total) * 100);
     
-    document.getElementById("stat-active-ports").textContent = `${active} / ${total}`;
-    document.getElementById("stat-ports-pct").textContent = `${pctPorts}% connecté`;
+    document.getElementById("stat-active-ports").textContent = `${i18n.formatNumber(active)} / ${i18n.formatNumber(total)}`;
+    i18n.setText(document.getElementById("stat-ports-pct"), "kpi.portsPct", { pct: i18n.formatPercent(pctPorts / 100) });
     document.getElementById("bar-active-ports").style.width = `${pctPorts}%`;
 
     const poeWatts = data.total_poe_used_watts || 0.0;
     const maxWatts = data.max_poe_watts || 382.0;
     const pctPoe = Math.min(100, Math.round((poeWatts / maxWatts) * 100));
 
-    document.getElementById("stat-poe-watts").textContent = `${poeWatts.toFixed(1)} W`;
-    document.getElementById("stat-poe-max").textContent = `${maxWatts} W`;
+    document.getElementById("stat-poe-watts").textContent = i18n.formatWatts(poeWatts);
+    i18n.setText(document.getElementById("stat-poe-max"), "kpi.poeOf", { max: t("unit.watts", { value: i18n.formatNumber(maxWatts) }) });
     document.getElementById("bar-poe-watts").style.width = `${pctPoe}%`;
 
     const isOnline = data.online !== false;
@@ -736,11 +786,11 @@ function updateKpiMetrics(data) {
     const uptimeDot = document.getElementById("stat-uptime-dot");
 
     if (isOnline) {
-        uptimeEl.textContent = data.uptime || "Connecté (REST API Live)";
+        uptimeEl.textContent = data.uptime_code === "demo" ? t("status.uptimeDemo") : t("status.uptimeConnected");
         uptimeEl.className = "text-sm font-bold text-slate-900 dark:text-white leading-snug";
         if (uptimeDot) uptimeDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 shrink-0";
     } else {
-        uptimeEl.textContent = data.last_error || "Hors-ligne / Inaccessible";
+        uptimeEl.textContent = data.offline_text || lastErrorText(data) || t("status.uptimeOffline");
         uptimeEl.className = "text-sm font-bold text-amber-600 dark:text-amber-400 leading-snug";
         if (uptimeDot) uptimeDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50 shrink-0";
     }
@@ -759,11 +809,11 @@ function updateCableColorPills() {
     });
 
     container.innerHTML = Object.entries(colorCounts).map(([hex, count]) => {
-        const label = COLOR_NAMES[hex.toLowerCase()] || hex;
+        const label = colorName(hex);
         return `
             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                 <span class="w-2 h-2 rounded-full" style="background-color: ${hex}"></span>
-                <span>${label}: <strong>${count}</strong></span>
+                <span>${label}: <strong>${i18n.formatNumber(count)}</strong></span>
             </span>
         `;
     }).join('');
@@ -774,12 +824,15 @@ function populateColorFilterOptions() {
     const currentVal = appState.colorFilter || select.value;
     const colors = new Set(appState.ports.map(p => p.cable_color).filter(Boolean));
 
-    select.innerHTML = '<option value="all">Toutes les couleurs de câble</option>';
+    select.innerHTML = "";
+    const allOpt = document.createElement("option");
+    allOpt.value = "all";
+    i18n.setText(allOpt, "filter.allColors");
+    select.appendChild(allOpt);
     colors.forEach(hex => {
-        const name = COLOR_NAMES[hex.toLowerCase()] || hex;
         const opt = document.createElement("option");
         opt.value = hex;
-        opt.textContent = `${name} (${hex})`;
+        opt.textContent = t("filter.colorOption", { name: colorName(hex), hex });
         if (hex === currentVal) opt.selected = true;
         select.appendChild(opt);
     });
@@ -830,7 +883,7 @@ function renderPortsGrid() {
     });
 
     const visibleCount = getFilteredPorts().length;
-    document.getElementById("filtered-count").textContent = `${visibleCount} / 52 ports affichés`;
+    i18n.setText(document.getElementById("filtered-count"), "toolbar.filteredCount", { count: visibleCount, total: 52 });
 }
 
 function renderPatchPanelGrid() {
@@ -880,8 +933,12 @@ function renderPatchPanelGrid() {
             `;
 
             el.title = linkedSwitchPort
-                ? `Prise Panneau PP-${patchId} -> Raccordé au Port Switch ${linkedSwitchPort.port_id} (${linkedSwitchPort.custom_name})${isPoeDelivering ? `\n⚡ Alimentation PoE Active (${linkedSwitchPort.poe_watts} W)` : ''}\n💡 Cliquez pour éditer ou glissez pour déplacer le câble !`
-                : `Prise Panneau PP-${patchId} (Libre)\n💡 Maintenez la souris enfoncée pour tirer un câble !`;
+                ? [
+                    t("tip.patchLinked", { pp: patchId, port: linkedSwitchPort.port_id, name: linkedSwitchPort.custom_name }),
+                    ...(isPoeDelivering ? [t("tip.patchPoe", { watts: i18n.formatWatts(linkedSwitchPort.poe_watts) })] : []),
+                    t("tip.patchLinkedHint")
+                ].join("\n")
+                : `${t("tip.patchFree", { pp: patchId })}\n${t("tip.patchFreeHint")}`;
 
             const linkedPortId = linkedSwitchPort ? linkedSwitchPort.port_id : null;
 
@@ -1097,9 +1154,9 @@ function createPortElement(port) {
 
     let poeIcon = '';
     if (port.poe_delivering) {
-        poeIcon = `<span class="led-indicator led-poe" title="PoE Alimenté (${port.poe_watts} W)"></span>`;
+        poeIcon = `<span class="led-indicator led-poe" title="${t("tip.poeDelivering", { watts: i18n.formatWatts(port.poe_watts) })}"></span>`;
     } else if (port.poe_active) {
-        poeIcon = `<span class="led-indicator led-poe opacity-60" title="PoE Activé (En recherche/Attente)"></span>`;
+        poeIcon = `<span class="led-indicator led-poe opacity-60" title="${t("tip.poeSearching")}"></span>`;
     }
 
     el.innerHTML = `
@@ -1112,7 +1169,7 @@ function createPortElement(port) {
         <div class="port-number">${port.port_id}</div>
     `;
 
-    el.title = `Port Switch ${port.port_id} (${port.custom_name})\n💡 Cliquez pour configurer, CTRL+Clic pour sélection multiple, ou glissez pour relier !`;
+    el.title = t("tip.switchPort", { port: port.port_id, name: port.custom_name });
 
     el.addEventListener("mousedown", (e) => startCableDrag(e, 'switch', port.port_id, el, color, port.port_id));
     el.addEventListener("touchstart", (e) => startCableDrag(e.touches[0], 'switch', port.port_id, el, color, port.port_id));
@@ -1195,12 +1252,14 @@ function updateDetailPanel(portId) {
     panel.classList.remove("hidden");
 
     document.getElementById("panel-port-num").textContent = port.port_id;
-    document.getElementById("panel-port-name").textContent = port.custom_name || `Port ${port.port_id}`;
+    const nameEl = document.getElementById("panel-port-name");
+    nameEl.removeAttribute("data-i18n");
+    nameEl.textContent = port.custom_name || `Port ${port.port_id}`;
 
     const statusBadge = document.getElementById("panel-link-status");
     if (port.link_status === 'UP') {
         statusBadge.className = "px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800";
-        statusBadge.textContent = `LINK UP (${port.speed_mbps} Mbps)`;
+        statusBadge.textContent = t("panel.linkUp", { speed: i18n.formatSpeed(port.speed_mbps) });
     } else {
         statusBadge.className = "px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700";
         statusBadge.textContent = "LINK DOWN";
@@ -1209,19 +1268,21 @@ function updateDetailPanel(portId) {
     document.getElementById("panel-vlan-tag").textContent = `VLAN ${port.vlan_untagged || 1}`;
 
     const colorHex = port.cable_color || "#64748b";
-    document.getElementById("panel-cable-color-name").textContent = COLOR_NAMES[colorHex.toLowerCase()] || colorHex;
+    document.getElementById("panel-cable-color-name").textContent = colorName(colorHex);
     document.getElementById("panel-color-indicator").style.backgroundColor = colorHex;
     document.getElementById("panel-cable-type").textContent = port.cable_type || "Cat6";
-    document.getElementById("panel-patch-port").textContent = port.patch_panel_port || "Non renseigné";
+    document.getElementById("panel-patch-port").textContent = port.patch_panel_port || t("panel.notSet");
     
-    let poeText = "Désactivé";
+    let poeText = t("panel.poeDisabled");
     if (port.poe_delivering) {
-        poeText = `${port.poe_watts} W (Alimenté)`;
+        poeText = t("panel.poeDelivering", { watts: i18n.formatWatts(port.poe_watts) });
     } else if (port.poe_active) {
-        poeText = "Activé (En attente/Recherche)";
+        poeText = t("panel.poeSearching");
     }
     document.getElementById("panel-poe-watts").textContent = poeText;
-    document.getElementById("panel-notes").textContent = port.notes ? `Note: ${port.notes}` : "Aucune note particulière.";
+    const notesEl = document.getElementById("panel-notes");
+    notesEl.removeAttribute("data-i18n");
+    notesEl.textContent = port.notes ? t("panel.note", { notes: port.notes }) : t("panel.noNotes");
 }
 
 function openEditModal(portId) {
@@ -1238,16 +1299,7 @@ function openEditModal(portId) {
     document.getElementById("edit-device-cat").value = port.device_category || 'other';
     document.getElementById("edit-notes").value = port.notes || '';
 
-    const poeBtnLabel = document.getElementById("poe-btn-label");
-    const poeBtn = document.getElementById("btn-toggle-poe");
-
-    if (port.poe_active) {
-        poeBtnLabel.textContent = "Désactiver PoE";
-        poeBtn.className = "px-2.5 py-1.5 rounded text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 transition cursor-pointer flex items-center justify-center gap-1";
-    } else {
-        poeBtnLabel.textContent = "Activer PoE";
-        poeBtn.className = "px-2.5 py-1.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 transition cursor-pointer flex items-center justify-center gap-1";
-    }
+    updatePoeButton(port);
 
     const colorHex = port.cable_color || '#3b82f6';
     document.getElementById("edit-color-picker").value = colorHex;
@@ -1263,6 +1315,19 @@ function openEditModal(portId) {
     document.getElementById("modal-edit-port").classList.remove("hidden");
 }
 
+function updatePoeButton(port) {
+    const poeBtnLabel = document.getElementById("poe-btn-label");
+    const poeBtn = document.getElementById("btn-toggle-poe");
+
+    if (port.poe_active) {
+        i18n.setText(poeBtnLabel, "poe.disable");
+        poeBtn.className = "px-2.5 py-1.5 rounded text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 transition cursor-pointer flex items-center justify-center gap-1";
+    } else {
+        i18n.setText(poeBtnLabel, "poe.enable");
+        poeBtn.className = "px-2.5 py-1.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 transition cursor-pointer flex items-center justify-center gap-1";
+    }
+}
+
 function closeModal() {
     document.getElementById("modal-edit-port").classList.add("hidden");
 }
@@ -1273,7 +1338,7 @@ function handleTogglePoeClick() {
     if (!port) return;
 
     if (port.poe_active) {
-        if (confirm(`Voulez-vous vraiment DÉSACTIVER l'alimentation PoE sur le Port ${portId} (${port.custom_name}) ?`)) {
+        if (confirm(t("confirm.poeDisable", { port: portId, name: port.custom_name }))) {
             sendControlAction(portId, "poe_disable");
         }
     } else {
@@ -1283,7 +1348,7 @@ function handleTogglePoeClick() {
 
 function openPoeWarningModal(portId, customName) {
     document.getElementById("poe-warn-port-num").textContent = portId;
-    document.getElementById("poe-warn-port-num2").textContent = portId;
+    i18n.setHtml(document.getElementById("poe-warn-certify"), "poeWarn.certify", { port: `<span class="font-mono font-bold">${Number(portId)}</span>` });
 
     const chk = document.getElementById("chk-confirm-poe");
     chk.checked = false;
@@ -1315,19 +1380,19 @@ async function sendControlAction(portId, action) {
         const data = await res.json();
         
         if (!data.success) {
-            alert(`⚠️ La commande matérielle n'a pas pu être appliquée sur le switch physique.\n\nAssurez-vous d'avoir indiqué le bon mot de passe de votre compte dans le menu '⚙️ Configuration'.`);
+            alert(t("alert.hwFailed"));
             await fetchStatus();
             return;
         }
 
         if (action === "poe_disable") {
-            showToastNotification(`⚡ Alimentation PoE désactivée sur le Port ${portId} !`);
+            showToastNotification(t("toast.poeOff", { port: portId }));
         } else if (action === "poe_enable") {
-            showToastNotification(`⚡ Alimentation PoE activée sur le Port ${portId} !`);
+            showToastNotification(t("toast.poeOn", { port: portId }));
         } else if (action === "disable") {
-            showToastNotification(`Port ${portId} Désactivé (Power Off)`);
+            showToastNotification(t("toast.portDisabled", { port: portId }));
         } else if (action === "enable") {
-            showToastNotification(`Port ${portId} Activé (Power On)`);
+            showToastNotification(t("toast.portEnabled", { port: portId }));
         }
 
         closeModal();
@@ -1362,7 +1427,7 @@ async function handleSavePortMetadata(e) {
             closeModal();
             await fetchStatus();
         } else {
-            alert("Erreur lors de la sauvegarde du port.");
+            alert(t("alert.saveFailed"));
         }
     } catch (err) {
         console.error("Error saving port metadata:", err);
@@ -1371,7 +1436,7 @@ async function handleSavePortMetadata(e) {
 
 async function handleFreePort() {
     const portId = parseInt(document.getElementById("edit-port-id").value, 10);
-    if (!confirm(`Voulez-vous vraiment libérer le port ${portId} et réinitialiser sa configuration visuelle ?`)) return;
+    if (!confirm(t("confirm.freePort", { port: portId }))) return;
 
     const payload = {
         custom_name: `Port ${portId}`,
@@ -1393,7 +1458,7 @@ async function handleFreePort() {
             closeModal();
             await fetchStatus();
         } else {
-            alert("Erreur lors de la réinitialisation du port.");
+            alert(t("alert.freeFailed"));
         }
     } catch (err) {
         console.error("Error freeing port:", err);
@@ -1401,7 +1466,7 @@ async function handleFreePort() {
 }
 
 async function handleResetAllPorts() {
-    if (!confirm("⚠️ ATTENTION : Voulez-vous vraiment libérer TOUS les 52 ports et réinitialiser la configuration pour repartir de zéro ? Cette action supprimera toutes les étiquettes et les raccordements.")) {
+    if (!confirm(t("confirm.resetAll"))) {
         return;
     }
 
@@ -1412,10 +1477,10 @@ async function handleResetAllPorts() {
         });
         const data = await res.json();
         if (data.success) {
-            alert("Tous les ports ont été libérés avec succès ! Vous pouvez désormais tout reconfigurer à zéro.");
+            alert(t("alert.resetAllDone"));
             await fetchStatus();
         } else {
-            alert("Erreur lors de la réinitialisation globale des ports.");
+            alert(t("alert.resetAllFailed"));
         }
     } catch (err) {
         console.error("Error resetting all ports:", err);
@@ -1428,14 +1493,14 @@ async function handleTogglePortState() {
     if (!port) return;
 
     const newAction = port.is_enabled ? "disable" : "enable";
-    if (!confirm(`Voulez-vous vraiment ${newAction === 'enable' ? 'activer' : 'désactiver'} le port ${portId} sur le switch ?`)) return;
+    if (!confirm(t(newAction === 'enable' ? "confirm.enablePort" : "confirm.disablePort", { port: portId }))) return;
 
     await sendControlAction(portId, newAction);
 }
 
 async function handleBouncePoe() {
     const portId = parseInt(document.getElementById("edit-port-id").value, 10);
-    if (!confirm(`Redémarrer l'alimentation PoE (Power Cycle) sur le port ${portId} ?`)) return;
+    if (!confirm(t("confirm.bouncePoe", { port: portId }))) return;
 
     await sendControlAction(portId, "poe_bounce");
 }
@@ -1480,9 +1545,9 @@ async function handleSaveSettings(e) {
         const data = await res.json();
         closeSettingsModal();
         if (data.demo_mode) {
-            alert("🎭 Mode Démo / Simulation activé avec succès ! Vous pouvez réaliser vos présentations en toute sécurité.");
+            alert(t("alert.demoOn"));
         } else {
-            alert(data.online ? "Connexion au switch réussie !" : "Configuration enregistrée, mais la connexion au switch a échoué.");
+            alert(data.online ? t("alert.connected") : t("alert.connectFailed"));
         }
         await fetchStatus();
     } catch (err) {

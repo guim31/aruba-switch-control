@@ -35,3 +35,6 @@ Thumbs.db
 
 # Agent workspace
 .agents/
+
+# Node (Playwright scripts)
+node_modules/
