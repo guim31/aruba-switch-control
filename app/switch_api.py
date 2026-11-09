@@ -44,14 +44,15 @@ class ArubaSwitchClient:
     def _init_demo_state(self):
         """Initialize a realistic simulated switch state for demo/dev mode."""
         preset_active = {
-            1: {"link": "UP", "speed": 1000, "poe_enabled": True, "poe_delivering": True, "watts": 12.4, "vlan": 10, "name": "AP-Wi-Fi-Salon"},
-            2: {"link": "UP", "speed": 1000, "poe_enabled": True, "poe_delivering": True, "watts": 6.8, "vlan": 10, "name": "AP-Wi-Fi-Etage"},
-            5: {"link": "UP", "speed": 100,  "poe_enabled": True, "poe_delivering": True, "watts": 4.2, "vlan": 20, "name": "Cam-Entree"},
-            6: {"link": "UP", "speed": 100,  "poe_enabled": True, "poe_delivering": True, "watts": 4.5, "vlan": 20, "name": "Cam-Jardin"},
-            9: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "Synology-NAS-Eth1"},
-            10: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "PC-Bureau"},
+            1: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "ESXi-01"},
+            3: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "PfSense-LAN"},
+            5: {"link": "UP", "speed": 1000, "poe_enabled": True, "poe_delivering": True, "watts": 12.4, "vlan": 10, "name": "AP-Wi-Fi-Etage"},
+            7: {"link": "UP", "speed": 1000, "poe_enabled": True, "poe_delivering": True, "watts": 6.8, "vlan": 10, "name": "AP-Wi-Fi-RDC"},
+            9: {"link": "UP", "speed": 100,  "poe_enabled": True, "poe_delivering": True, "watts": 4.2, "vlan": 20, "name": "Cam-Parking"},
+            11: {"link": "UP", "speed": 100,  "poe_enabled": True, "poe_delivering": True, "watts": 4.5, "vlan": 20, "name": "Cam-Entree"},
             12: {"link": "UP", "speed": 100, "poe_enabled": True, "poe_delivering": True, "watts": 3.1, "vlan": 30, "name": "Tel-VoIP"},
-            15: {"link": "UP", "speed": 1000, "poe_enabled": True, "poe_delivering": True, "watts": 8.7, "vlan": 10, "name": "AP-Wi-Fi-Garage"},
+            13: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "Synology-LACP-1"},
+            15: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "Synology-LACP-2"},
             24: {"link": "UP", "speed": 1000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "Imprimante-Bureau"},
             49: {"link": "UP", "speed": 10000, "poe_enabled": False, "poe_delivering": False, "watts": 0.0, "vlan": 1, "name": "SFP-Uplink-10G"}
         }

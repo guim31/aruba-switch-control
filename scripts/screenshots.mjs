@@ -32,8 +32,8 @@ async function openApp(theme) {
     await page.goto(BASE_URL, { waitUntil: "networkidle" });
     await page.waitForSelector(".port-unit");
     await page.evaluate(() => document.fonts.ready);
-    // Cables are drawn 100 ms after each render; select port 1 so the detail panel is filled
-    await page.hover('.port-unit[data-port-id="1"]');
+    // Cables are drawn 100 ms after each render; hover a PoE port so the detail panel is filled
+    await page.hover('.port-unit[data-port-id="5"]');
     await page.mouse.move(5, 5);
     await page.waitForSelector(".patch-cable-path");
     await page.waitForTimeout(600);
