@@ -127,7 +127,7 @@ async function walkApp(page, lang) {
     await page.click("#btn-theme-toggle");
 
     // Port editor + its confirmations (all dismissed)
-    await page.click('.port-unit[data-port-id="1"]');
+    await page.click('.port-unit[data-port-id="5"]');
     await page.waitForSelector("#modal-edit-port:not(.hidden)");
     await checkState(page, "port editor (PoE port)", lang);
     await page.click("#btn-toggle-poe");       // confirm: turn PoE off

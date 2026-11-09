@@ -41,14 +41,15 @@ def seed_default_ports(cursor, is_demo: bool = False):
     now = datetime.utcnow().isoformat()
     if is_demo:
         sample_colors = {
+            # Patch panel jacks go to the top row (odd ports) in order, so the demo cables stay tidy
             1: ("Serveur Principal", "#ef4444", "Cat6a", "PP-01", "server", "Serveur VMware ESXi"),
-            2: ("Passerelle Routeur", "#f97316", "Cat6a", "PP-02", "router", "Routeur Firewall PfSense"),
-            3: ("Borne Wi-Fi Etage 1", "#eab308", "Cat6", "PP-03", "ap", "Aruba AP-305 PoE+"),
-            4: ("Borne Wi-Fi RDC", "#eab308", "Cat6", "PP-04", "ap", "Aruba AP-305 PoE+"),
-            5: ("Caméra Parking", "#22c55e", "Cat6", "PP-05", "camera", "Caméra Hikvision PoE"),
-            6: ("Caméra Entrée", "#22c55e", "Cat6", "PP-06", "camera", "Caméra Hikvision PoE"),
-            7: ("NAS Synology LACP 1", "#3b82f6", "Cat6a", "PP-07", "server", "Synology DS1821+ Port 1"),
-            8: ("NAS Synology LACP 2", "#3b82f6", "Cat6a", "PP-08", "server", "Synology DS1821+ Port 2"),
+            3: ("Passerelle Routeur", "#f97316", "Cat6a", "PP-02", "router", "Routeur Firewall PfSense"),
+            5: ("Borne Wi-Fi Etage 1", "#eab308", "Cat6", "PP-03", "ap", "Aruba AP-305 PoE+"),
+            7: ("Borne Wi-Fi RDC", "#eab308", "Cat6", "PP-04", "ap", "Aruba AP-305 PoE+"),
+            9: ("Caméra Parking", "#22c55e", "Cat6", "PP-05", "camera", "Caméra Hikvision PoE"),
+            11: ("Caméra Entrée", "#22c55e", "Cat6", "PP-06", "camera", "Caméra Hikvision PoE"),
+            13: ("NAS Synology LACP 1", "#3b82f6", "Cat6a", "PP-07", "server", "Synology DS1821+ Port 1"),
+            15: ("NAS Synology LACP 2", "#3b82f6", "Cat6a", "PP-08", "server", "Synology DS1821+ Port 2"),
             49: ("Uplink SFP 1G Fibre", "#a855f7", "Fiber MM", "OPT-01", "switch", "Lien Switch Coeur (SFP 1)"),
         }
     else:
